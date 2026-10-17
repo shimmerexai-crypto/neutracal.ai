@@ -7,39 +7,45 @@
     <group
         android:pivotX="54"
         android:pivotY="54">
-        <!-- Outer Thali Rim / Calorie Ring -->
+        <!-- Sleek Outer Shield / Calorie Accent Ring -->
         <path
             android:fillColor="#00000000"
-            android:strokeColor="#FFFFFF"
-            android:strokeWidth="3.2"
-            android:strokeLineCap="round"
-            android:pathData="M32,32 A31,31 0 1,1 76,76" />
-        <!-- Accent segment for the ring -->
+            android:strokeColor="#1F1F24"
+            android:strokeWidth="2.5"
+            android:pathData="M30,30 L78,30 A8,8 0 0,1 86,38 L86,70 A8,8 0 0,1 78,78 L30,78 A8,8 0 0,1 22,70 L22,38 A8,8 0 0,1 30,30 Z" />
+
+        <!-- Outer Emerald Glow Ring Arc -->
         <path
             android:fillColor="#00000000"
             android:strokeColor="#34C759"
-            android:strokeWidth="3.6"
+            android:strokeWidth="2.5"
             android:strokeLineCap="round"
-            android:pathData="M76,76 A31,31 0 0,1 32,32" />
-        <!-- Corner scanner reticles -->
-        <path
-            android:fillColor="#00000000"
-            android:strokeColor="#8E8E93"
-            android:strokeWidth="2.2"
-            android:strokeLineCap="round"
-            android:pathData="M36,28 L28,28 L28,36 M80,28 L72,28 M80,28 L80,36 M28,72 L28,80 L36,80 M72,80 L80,80 L80,72" />
-        <!-- Central Indian Thali Katori arrangement / leaf spark -->
-        <!-- Center Katori -->
+            android:pathData="M78,30 A8,8 0 0,1 86,38 L86,52" />
+
+        <!-- Luxury Geometric Capital 'N' Monogram -->
+        <!-- Left Pillar of 'N' -->
         <path
             android:fillColor="#FFFFFF"
-            android:pathData="M54,54m-8,0a8,8 0 1,1 16,0a8,8 0 1,1 -16,0" />
-        <!-- Top leaf spark -->
+            android:pathData="M34,35 L42,35 L42,73 L34,73 Z" />
+
+        <!-- Right Pillar of 'N' -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M66,35 L74,35 L74,73 L66,73 Z" />
+
+        <!-- Dynamic Diagonal Stem of 'N' with sharp precision cuts -->
         <path
             android:fillColor="#34C759"
-            android:pathData="M54,42 C54,37 59,34 62,34 C62,37 59,42 54,42 Z" />
-        <!-- Bottom-left and Bottom-right katoris -->
+            android:pathData="M42,35 L50,35 L74,68 L66,68 Z" />
+
+        <!-- Emerald Sparkle / Leaf Apex on top-right of 'N' -->
         <path
-            android:fillColor="#E5E5EA"
-            android:pathData="M43,62m-5,0a5,5 0 1,1 10,0a5,5 0 1,1 -10,0 M65,62m-5,0a5,5 0 1,1 10,0a5,5 0 1,1 -10,0" />
+            android:fillColor="#30D158"
+            android:pathData="M74,30 C74,26 78,24 81,24 C81,27 78,30 74,30 Z" />
+
+        <!-- Subtle AI Core Dot -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M54,54m-2.2,0a2.2,2.2 0 1,1 4.4,0a2.2,2.2 0 1,1 -4.4,0" />
     </group>
 </vector>

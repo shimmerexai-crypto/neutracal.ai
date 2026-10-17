@@ -70,6 +70,7 @@ import com.example.viewmodel.NutracalViewModel
 fun DashboardScreen(
     viewModel: NutracalViewModel,
     onNavigateToScan: () -> Unit,
+    onOpenProfile: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val language by viewModel.language.collectAsState()
@@ -108,7 +109,10 @@ fun DashboardScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        onClick = { viewModel.setDrawerOpen(true) },
+                        onClick = {
+                            onOpenProfile()
+                            viewModel.setDrawerOpen(true)
+                        },
                         modifier = Modifier
                             .size(42.dp)
                             .clip(CircleShape)

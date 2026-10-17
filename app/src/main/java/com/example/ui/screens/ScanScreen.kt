@@ -15,9 +15,12 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -194,9 +197,20 @@ fun ScanScreen(
                 modifier = Modifier
                     .size(240.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF141416)),
+                    .background(Color(0xFF141416))
+                    .clickable { cameraLauncher.launch(null) },
                 contentAlignment = Alignment.Center
             ) {
+                // If user took or selected a photo, show it inside the lens
+                if (selectedBitmap != null) {
+                    Image(
+                        bitmap = selectedBitmap!!.asImageBitmap(),
+                        contentDescription = "Selected food",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
                 // Circular scanner reticle with subtle rotation
                 Canvas(
                     modifier = Modifier
@@ -217,29 +231,38 @@ fun ScanScreen(
                 // Inner Guide
                 Canvas(modifier = Modifier.size(180.dp)) {
                     drawCircle(
-                        color = NutracalGreen.copy(alpha = 0.4f),
+                        color = NutracalGreen.copy(alpha = 0.5f),
                         radius = size.width / 2,
-                        style = Stroke(width = 1.5.dp.toPx())
+                        style = Stroke(width = 2.dp.toPx())
                     )
                 }
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.CenterFocusStrong,
-                        contentDescription = "Target",
-                        tint = NutracalWhite.copy(alpha = 0.9f),
-                        modifier = Modifier.size(54.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = Localization.t("camera_instructions", language),
-                        fontSize = 12.sp,
-                        color = NutracalWhite.copy(alpha = 0.8f),
-                        modifier = Modifier.padding(horizontal = 24.dp)
-                    )
+                if (selectedBitmap == null) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.CenterFocusStrong,
+                            contentDescription = "Target",
+                            tint = NutracalWhite.copy(alpha = 0.9f),
+                            modifier = Modifier.size(54.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = Localization.t("camera_instructions", language),
+                            fontSize = 12.sp,
+                            color = NutracalWhite.copy(alpha = 0.9f),
+                            modifier = Modifier.padding(horizontal = 24.dp)
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "Tap circle to capture",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = NutracalGreen
+                        )
+                    }
                 }
             }
 

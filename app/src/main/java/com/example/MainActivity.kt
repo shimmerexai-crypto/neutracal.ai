@@ -182,7 +182,10 @@ fun NutracalApp(viewModel: NutracalViewModel = viewModel()) {
                                 when (tab) {
                                     "home" -> DashboardScreen(
                                         viewModel = viewModel,
-                                        onNavigateToScan = { viewModel.setTab("scan") }
+                                        onNavigateToScan = { viewModel.setTab("scan") },
+                                        onOpenProfile = {
+                                            scope.launch { drawerState.open() }
+                                        }
                                     )
                                     "search" -> SearchScreen(viewModel = viewModel)
                                     "scan" -> ScanScreen(
@@ -196,7 +199,10 @@ fun NutracalApp(viewModel: NutracalViewModel = viewModel()) {
                                     "settings" -> SettingsScreen(viewModel = viewModel)
                                     else -> DashboardScreen(
                                         viewModel = viewModel,
-                                        onNavigateToScan = { viewModel.setTab("scan") }
+                                        onNavigateToScan = { viewModel.setTab("scan") },
+                                        onOpenProfile = {
+                                            scope.launch { drawerState.open() }
+                                        }
                                     )
                                 }
                             }

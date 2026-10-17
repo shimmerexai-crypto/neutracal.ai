@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Nutracal.ai - AI Indian Food Scanner (Cal AI + MyFitnessPal)</title>
-  <meta name="description" content="AI food scanner for Indian users with ICMR-NIN nutrition values, glycemic sugar spike meter, and desi health fixes." />
+  <title>Nutracal.ai - Cal AI & MyFitnessPal Indian Food Scanner</title>
+  <meta name="description" content="AI food scanner for Indian users with ICMR-NIN nutrition data, sugar spike meter, and live camera." />
   <meta name="theme-color" content="#FFFFFF" />
-  
-  <!-- Apple PWA Meta Tags -->
+
+  <!-- Apple & PWA Meta Tags -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Nutracal.ai" />
@@ -22,50 +22,56 @@
             nutraBg: '#FFFFFF',
             nutraText: '#0A0A0A',
             nutraSec: '#8E8E93',
-            nutraCard: '#F5F5F7',
-            nutraBorder: '#E5E5EA',
+            nutraCard: '#F7F7F9',
+            nutraBorder: '#EAEAEC',
             nutraGreen: '#34C759',
             nutraAmber: '#FF9F0A',
             nutraRed: '#FF3B30',
-            nutraBlue: '#007AFF'
+            nutraBlue: '#007AFF',
+            nutraPurple: '#AF52DE'
           },
           fontFamily: {
-            sans: ['-apple-system', 'BlinkMacSystemFont', 'Inter', 'Noto Sans Devanagari', 'sans-serif']
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Inter', 'Noto Sans Devanagari', 'sans-serif']
           }
         }
       }
     }
   </script>
 
-  <!-- React 18 & Babel for JSX -->
+  <!-- React 18 & Babel -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
-    /* Clean iOS font rendering & smooth touch response */
-    body {
-      -webkit-font-smoothing: antialiased;
+    /* iOS Momentum Scrolling & Touch Dynamics */
+    * {
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      background-color: #F2F2F7;
+      box-sizing: border-box;
     }
-    input, button, select {
-      user-select: auto;
+    body {
+      background-color: #F4F4F6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
     .tap-scale {
-      transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .tap-scale:active {
-      transform: scale(0.95);
+      transform: scale(0.96);
     }
-    /* Hide scrollbars for clean iOS look */
     .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
     .no-scrollbar {
       -ms-overflow-style: none;
       scrollbar-width: none;
+    }
+    .shutter-glow {
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.2), 0 0 20px rgba(52,199,89,0.4);
     }
   </style>
 </head>
@@ -75,14 +81,44 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
+    // --- Premium Brand Capital 'N' Monogram Logo Component ---
+    function BrandLogo({ size = 36 }) {
+      return (
+        <div 
+          style={{ width: size, height: size }} 
+          className="relative rounded-2xl bg-gradient-to-br from-[#1A1A1E] to-[#0A0A0C] p-[1.5px] shadow-md flex items-center justify-center flex-shrink-0"
+        >
+          <div className="w-full h-full rounded-[14px] bg-[#0E0E12] flex items-center justify-center relative overflow-hidden">
+            {/* Ambient emerald backlight */}
+            <div className="absolute top-0 right-0 w-4 h-4 bg-nutraGreen/30 blur-md pointer-events-none rounded-full"></div>
+            
+            {/* Elegant Capital 'N' SVG */}
+            <svg viewBox="0 0 40 40" className="w-[70%] h-[70%]" fill="none">
+              {/* Left Column of 'N' */}
+              <rect x="7" y="8" width="5.5" height="24" rx="1.5" fill="#FFFFFF" />
+              {/* Right Column of 'N' */}
+              <rect x="27.5" y="8" width="5.5" height="24" rx="1.5" fill="#FFFFFF" />
+              {/* Sleek diagonal slash of 'N' */}
+              <path d="M12.5 8.5L28.5 30.5H23.5L8.5 10V8.5H12.5Z" fill="#34C759" />
+              {/* Emerald leaf sparkle at apex */}
+              <circle cx="31" cy="6" r="2.2" fill="#30D158" />
+              {/* Subtle tech center pulse */}
+              <circle cx="20" cy="20" r="1.5" fill="#FFFFFF" opacity="0.9" />
+            </svg>
+          </div>
+        </div>
+      );
+    }
+
     // --- Localization Dictionary ---
     const i18n = {
       en: {
         appName: "Nutracal.ai",
-        tagline: "AI Food & Thali Scanner for India",
+        tagline: "Smart AI Food & Thali Scanner",
         diary: "Diary",
         search: "Search",
-        scan: "Scan AI",
+        scan: "Scan",
+        fasting: "Fasting",
         progress: "Progress",
         settings: "Settings",
         baseGoal: "Base Goal",
@@ -99,21 +135,26 @@
         dinner: "Dinner",
         addFood: "+ ADD FOOD",
         cookingStyle: "Cooking Style",
-        homeNormal: "Home Normal (1 tsp oil)",
-        extraGhee: "Extra Ghee / Makhan",
-        dhabaStyle: "Dhaba / Restaurant Style",
+        homeNormal: "Home (1 tsp oil)",
+        extraGhee: "Extra Ghee (+1.5 tbsp)",
+        dhabaStyle: "Dhaba Style (+35% fat)",
         sugarSpike: "Sugar Spike Meter",
         desiHealthFix: "Desi Health Fix",
-        portionConfirm: "Confirm / Adjust Portions",
-        disclaimer: "AI estimate based on ICMR-NIN standards. Not medical advice.",
-        logMeal: "Log to Today's Diary"
+        portionConfirm: "Portion Adjustments",
+        disclaimer: "AI estimate based on ICMR-NIN nutrition data. Not medical advice.",
+        logMeal: "Log to Today's Diary",
+        fastingTitle: "Intermittent Fasting",
+        fastingActive: "Fasting Window Active",
+        eatingActive: "Eating Window",
+        fatBurn: "Fat Burning Phase"
       },
       hi: {
         appName: "Nutracal.ai",
-        tagline: "भारतीय भोजन के लिए स्मार्ट AI स्कैनर",
+        tagline: "स्मार्ट AI थाली और भोजन स्कैनर",
         diary: "डायरी",
         search: "सर्च",
-        scan: "स्कैन AI",
+        scan: "स्कैन",
+        fasting: "उपवास",
         progress: "प्रगति",
         settings: "सेटिंग्स",
         baseGoal: "दैनिक लक्ष्य",
@@ -131,20 +172,25 @@
         addFood: "+ खाना जोड़ें",
         cookingStyle: "पकाने का तरीका",
         homeNormal: "घर का सादा (1 चम्मच तेल)",
-        extraGhee: "शुद्ध देसी घी / मक्खन",
-        dhabaStyle: "ढाबा / रेस्टोरेंट स्टाइल",
+        extraGhee: "शुद्ध देसी घी (+1.5 चम्मच)",
+        dhabaStyle: "ढाबा रिच (+35% फैट)",
         sugarSpike: "शुगर स्पाइक मीटर",
         desiHealthFix: "देसी स्वास्थ्य उपाय",
-        portionConfirm: "मात्रा की पुष्टि / बदलाव",
+        portionConfirm: "मात्रा की पुष्टि",
         disclaimer: "ICMR-NIN मानकों पर आधारित AI अनुमान। चिकित्सकीय सलाह नहीं।",
-        logMeal: "डायरी में जोड़ें"
+        logMeal: "डायरी में जोड़ें",
+        fastingTitle: "इंटरमिटेंट फास्टिंग",
+        fastingActive: "फास्टिंग चल रही है",
+        eatingActive: "खाने की विंडो",
+        fatBurn: "फैट बर्निंग स्टेज"
       },
       hinglish: {
         appName: "Nutracal.ai",
         tagline: "Apki Thali Ka Smart AI Scanner",
         diary: "Diary",
         search: "Search",
-        scan: "Scan AI",
+        scan: "Scan",
+        fasting: "Fasting",
         progress: "Progress",
         settings: "Settings",
         baseGoal: "Daily Goal",
@@ -161,116 +207,228 @@
         dinner: "Dinner",
         addFood: "+ ADD FOOD",
         cookingStyle: "Khane Ka Style",
-        homeNormal: "Home Normal (1 tsp oil)",
-        extraGhee: "Extra Ghee / Makhan",
-        dhabaStyle: "Dhaba / Restaurant Style",
+        homeNormal: "Home (1 tsp oil)",
+        extraGhee: "Extra Ghee (+1.5 tbsp)",
+        dhabaStyle: "Dhaba Style (+35% fat)",
         sugarSpike: "Sugar Spike Meter",
         desiHealthFix: "Desi Health Fix",
         portionConfirm: "Portion Adjust Karein",
         disclaimer: "AI estimate, not medical advice. ICMR-NIN guidelines applied.",
-        logMeal: "Thali Log Karein"
+        logMeal: "Thali Log Karein",
+        fastingTitle: "Intermittent Fasting",
+        fastingActive: "Fasting Window Chal Rahi Hai",
+        eatingActive: "Eating Window",
+        fatBurn: "Fat Burning Mode On"
       }
     };
 
-    // --- Indian Food Database (ICMR-NIN) ---
+    // --- Indian Food Database (ICMR-NIN) with Authentic Photos & Macros ---
     const indianFoodDB = [
-      { id: 1, name: "Bajre Ki Roti", desc: "1 medium (45g flour)", cal: 115, p: 3.2, c: 22.0, f: 1.4, cat: "Breads & Roti", spike: "LOW", fix: "Rich in fiber & magnesium. Pair with roasted garlic chutney." },
-      { id: 2, name: "Gatte Ki Sabzi", desc: "1 katori (150g curd gravy)", cal: 185, p: 6.8, c: 14.5, f: 11.2, cat: "Sabzi & Curries", spike: "LOW", fix: "Gram flour (besan) provides slow-release carbs. Pair with salad." },
-      { id: 3, name: "Dal Baati Churma", desc: "2 baatis + 1 katori dal + churma", cal: 580, p: 16.5, c: 76.0, f: 24.0, cat: "Traditional Thali", spike: "HIGH", fix: "Heavy calorie meal. Take a 20-minute brisk walk post meal." },
-      { id: 4, name: "Ker Sangri", desc: "1 small katori (100g)", cal: 145, p: 4.2, c: 12.0, f: 8.5, cat: "Rajasthani Specialty", spike: "LOW", fix: "Packed with polyphenols and gut-friendly prebiotic fiber." },
-      { id: 5, name: "Whole Wheat Phulka", desc: "1 medium without ghee", cal: 85, p: 3.0, c: 17.5, f: 0.6, cat: "Breads & Roti", spike: "MED", fix: "Eat a plate of raw cucumber-tomato salad before roti." },
-      { id: 6, name: "Yellow Dal Tadka", desc: "1 medium katori (150g)", cal: 140, p: 8.2, c: 18.0, f: 4.2, cat: "Dals & Legumes", spike: "LOW", fix: "Jeera & hing tadka prevents bloating and improves mineral absorption." },
-      { id: 7, name: "Paneer Butter Masala", desc: "1 katori (150g)", cal: 310, p: 13.5, c: 12.0, f: 23.5, cat: "Sabzi & Curries", spike: "LOW", fix: "High quality dairy protein. Pair with whole wheat roti." },
-      { id: 8, name: "Hyderabadi Chicken Biryani", desc: "1 plate (280g)", cal: 430, p: 24.5, c: 48.0, f: 14.0, cat: "Non-Veg", spike: "MED", fix: "Always pair with cucumber raita to buffer glucose response." },
-      { id: 9, name: "Masala Dosa with Sambar", desc: "1 medium dosa", cal: 295, p: 5.8, c: 44.0, f: 10.8, cat: "Breakfast", spike: "HIGH", fix: "Dip in hot vegetable sambar rather than sweet coconut chutney." },
-      { id: 10, name: "Spiced Chaas (Buttermilk)", desc: "1 glass (250ml) with jeera", cal: 55, p: 3.2, c: 5.0, f: 2.2, cat: "Beverages", spike: "LOW", fix: "Ideal natural probiotic cooler. Roasted cumin relieves bloating." }
+      { id: 1, name: "Bajre Ki Roti", desc: "1 medium roti (45g flour)", cal: 115, p: 3.2, c: 22.0, f: 1.4, cat: "Breads & Roti", spike: "LOW", fix: "High fiber millet. Pair with roasted garlic-chilli chutney." },
+      { id: 2, name: "Gatte Ki Sabzi", desc: "1 medium katori (150g besan curry)", cal: 185, p: 6.8, c: 14.5, f: 11.2, cat: "Sabzi & Curries", spike: "LOW", fix: "Besan has a low glycemic index. Sip cold chaas afterwards." },
+      { id: 3, name: "Dal Baati Churma", desc: "2 baatis + 1 katori dal + churma", cal: 590, p: 16.5, c: 76.0, f: 25.0, cat: "Traditional Thali", spike: "HIGH", fix: "High calorie indulgence. Take a 25-minute brisk walk post meal." },
+      { id: 4, name: "Ker Sangri", desc: "1 small katori (100g desert beans)", cal: 145, p: 4.2, c: 12.0, f: 8.5, cat: "Rajasthani Specialty", spike: "LOW", fix: "Extremely rich in gut-protecting prebiotic fiber and polyphenols." },
+      { id: 5, name: "Whole Wheat Phulka (Roti)", desc: "1 soft phulka without ghee", cal: 85, p: 3.0, c: 17.5, f: 0.6, cat: "Breads & Roti", spike: "MED", fix: "Always start meal with sliced cucumbers to blunt insulin spike." },
+      { id: 6, name: "Yellow Moong Dal Tadka", desc: "1 medium katori (150g)", cal: 140, p: 8.2, c: 18.0, f: 4.2, cat: "Dals & Legumes", spike: "LOW", fix: "Hing and cumin tadka reduces bloating and aids bioavailability." },
+      { id: 7, name: "Paneer Butter Masala", desc: "1 katori (150g rich gravy)", cal: 320, p: 14.0, c: 11.5, f: 24.5, cat: "Sabzi & Curries", spike: "LOW", fix: "High quality dairy protein buffers carbohydrates. Keep roti to 1-2." },
+      { id: 8, name: "Masala Dosa with Sambar", desc: "1 medium crispy dosa", cal: 295, p: 5.8, c: 44.0, f: 10.8, cat: "Breakfast", spike: "HIGH", fix: "Dip generously into vegetable sambar rather than sweet coconut chutney." },
+      { id: 9, name: "Hyderabadi Chicken Biryani", desc: "1 serving (260g)", cal: 440, p: 25.0, c: 49.0, f: 14.5, cat: "Non-Veg", spike: "MED", fix: "Pair with a bowl of onion-cucumber raita to reduce glucose absorption." },
+      { id: 10, name: "Spiced Jeera Chaas", desc: "1 big glass (250ml)", cal: 55, p: 3.4, c: 5.0, f: 2.2, cat: "Beverages", spike: "LOW", fix: "Natural probiotic hero! Sip cold with roasted cumin and mint." },
+      { id: 11, name: "Poha with Roasted Peanuts", desc: "1 plate (160g)", cal: 245, p: 6.2, c: 38.0, f: 7.5, spike: "MED", fix: "Squeeze fresh lemon for vitamin C and add extra boiled sprouts." },
+      { id: 12, name: "Oats & Moong Dal Khichdi", desc: "1 bowl (200g)", cal: 210, p: 9.5, c: 34.0, f: 3.8, cat: "Comfort Food", spike: "LOW", fix: "Ideal restorative dinner. High soluble beta-glucan fiber." }
     ];
 
     function App() {
       const [lang, setLang] = useState('hinglish');
       const t = i18n[lang] || i18n.en;
 
-      // App Flow: 'auth', 'onboarding', 'main'
-      const [screen, setScreen] = useState('main');
-      const [activeTab, setActiveTab] = useState('diary'); // 'diary', 'search', 'scan', 'progress', 'settings'
+      // Active screen / tabs
+      const [activeTab, setActiveTab] = useState('diary'); // 'diary', 'search', 'scan', 'fasting', 'progress'
       
-      // User Profile & MyFitnessPal Goals
+      // Profile Drawer state
+      const [isProfileOpen, setIsProfileOpen] = useState(false);
+      const [isEditingGoal, setIsEditingGoal] = useState(false);
+
+      // User Profile & MFP / Cal AI state
       const [user, setUser] = useState({
         name: "Aarav Sharma",
-        email: "aarav@example.com",
-        gender: "Male",
-        age: 27,
-        heightCm: 175,
-        weightKg: 70.0,
-        startWeightKg: 74.5,
-        targetWeightKg: 66.0,
-        goal: "Weight Loss",
+        email: "aarav.sharma@gmail.com",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+        streak: 7,
         dailyCal: 1950,
         proteinG: 95,
         carbsG: 210,
-        fatG: 52,
-        carbsPct: 45,
-        proteinPct: 25,
-        fatPct: 30,
-        streak: 6,
-        exerciseBurn: 260,
-        steps: 7240
+        fatG: 50,
+        weightKg: 70.2,
+        targetWeightKg: 66.0,
+        heightCm: 176,
+        exerciseBurn: 240,
+        steps: 6850,
+        fastingHours: 14,
+        fastingTarget: 16
       });
 
       // Daily Meals Diary
       const [meals, setMeals] = useState([
-        { id: 1, type: "Breakfast", title: "Poha with Peanuts & Lemon", cal: 240, p: 5.8, c: 38.0, f: 7.2, spike: "MED", fix: "Add boiled egg or paneer to boost morning protein." },
-        { id: 2, type: "Lunch", title: "Bajre Ki Roti & Gatte Ki Sabzi", cal: 420, p: 13.5, c: 52.0, f: 14.5, spike: "LOW", fix: "Sip chilled jeera chaas to assist gut motility." }
+        { id: 1, type: "Breakfast", title: "Poha with Roasted Peanuts & Lime", cal: 245, p: 6.2, c: 38.0, f: 7.5, spike: "MED", fix: "Good energy start. Lemon boosts iron bioavailability." },
+        { id: 2, type: "Lunch", title: "Bajre Ki Roti & Gatte Ki Sabzi", cal: 415, p: 13.0, c: 51.0, f: 14.5, spike: "LOW", fix: "Millet & besan combo provides smooth sustained energy." }
       ]);
 
-      const [waterGlasses, setWaterGlasses] = useState(7);
+      const [waterGlasses, setWaterGlasses] = useState(6);
       const [cookingStyle, setCookingStyle] = useState('normal'); // 'normal', 'ghee', 'dhaba'
-      const [scanResult, setScanResult] = useState(null);
       const [isScanning, setIsScanning] = useState(false);
-      const [showQuickAdd, setShowQuickAdd] = useState(false);
-      const [activeMealType, setActiveMealType] = useState('Lunch');
+      const [scanResult, setScanResult] = useState(null);
+      const [capturedImage, setCapturedImage] = useState(null);
 
-      // Calorie Calculations
+      // Search state
+      const [searchQuery, setSearchQuery] = useState('');
+      const [selectedCategory, setSelectedCategory] = useState('All');
+
+      // Camera stream management
+      const videoRef = useRef(null);
+      const [cameraActive, setCameraActive] = useState(false);
+      const [facingMode, setFacingMode] = useState('environment'); // 'environment' (back) or 'user' (front)
+      const [cameraError, setCameraError] = useState(null);
+      const streamRef = useRef(null);
+      const fileInputRef = useRef(null);
+
+      // Calculations
       const consumedCal = meals.reduce((acc, m) => acc + m.cal, 0);
       const consumedP = meals.reduce((acc, m) => acc + m.p, 0);
       const consumedC = meals.reduce((acc, m) => acc + m.c, 0);
       const consumedF = meals.reduce((acc, m) => acc + m.f, 0);
       const remainingCal = Math.max(0, user.dailyCal - consumedCal + user.exerciseBurn);
 
-      // --- Scanner Handler ---
-      const triggerScan = (thaliName = "North Indian Ghar Ka Thali") => {
+      // Start Camera Stream
+      const startCamera = async (mode = facingMode) => {
+        setCameraError(null);
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+        }
+
+        try {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error("Camera API not supported in this browser. Please use Gallery Upload.");
+          }
+
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: mode },
+              width: { ideal: 720 },
+              height: { ideal: 720 }
+            },
+            audio: false
+          });
+
+          streamRef.current = stream;
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.play();
+            setCameraActive(true);
+          }
+        } catch (err) {
+          console.warn("Camera access error:", err);
+          setCameraError(err.message || "Camera permission denied or unavailable on this device.");
+          setCameraActive(false);
+        }
+      };
+
+      const stopCamera = () => {
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
+        setCameraActive(false);
+      };
+
+      // Toggle camera facing mode (front / back)
+      const flipCamera = () => {
+        const nextMode = facingMode === 'environment' ? 'user' : 'environment';
+        setFacingMode(nextMode);
+        startCamera(nextMode);
+      };
+
+      // Effect: start camera when entering scan tab, stop when leaving
+      useEffect(() => {
+        if (activeTab === 'scan' && !scanResult) {
+          startCamera();
+        } else {
+          stopCamera();
+        }
+        return () => stopCamera();
+      }, [activeTab, scanResult]);
+
+      // Capture frame from video or fallback canvas
+      const captureSnapshot = () => {
+        let snapshotUrl = null;
+        if (videoRef.current && cameraActive) {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = videoRef.current.videoWidth || 480;
+            canvas.height = videoRef.current.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+            snapshotUrl = canvas.toDataURL('image/jpeg', 0.85);
+          } catch (e) {
+            console.error("Canvas capture error:", e);
+          }
+        }
+
+        setCapturedImage(snapshotUrl);
+        stopCamera();
+        runAiAnalysis("Ghar Ki Desi Thali (Scanned)", snapshotUrl);
+      };
+
+      // Handle Gallery / File upload
+      const handleFileUpload = (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const imgData = event.target.result;
+            setCapturedImage(imgData);
+            stopCamera();
+            runAiAnalysis("Uploaded Thali Meal", imgData);
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+
+      // AI Analysis Engine with Cooking Style Adjustments
+      const runAiAnalysis = (title = "Desi Thali Special", image = null) => {
         setIsScanning(true);
         setTimeout(() => {
-          let multiplier = cookingStyle === 'ghee' ? 1.25 : cookingStyle === 'dhaba' ? 1.35 : 1.0;
-          let fatMultiplier = cookingStyle === 'ghee' ? 1.45 : cookingStyle === 'dhaba' ? 1.6 : 1.0;
-          
-          let baseItems = [
+          let multiplier = cookingStyle === 'ghee' ? 1.25 : cookingStyle === 'dhaba' ? 1.40 : 1.0;
+          let fatMultiplier = cookingStyle === 'ghee' ? 1.45 : cookingStyle === 'dhaba' ? 1.65 : 1.0;
+
+          const baseItems = [
             { name: "Bajre Ki Roti (2 pcs)", cal: Math.round(230 * multiplier), p: 6.4, c: 44, f: Math.round(2.8 * fatMultiplier), scale: 1 },
-            { name: "Gatte Ki Sabzi (1 katori)", cal: Math.round(190 * multiplier), p: 7.0, c: 15, f: Math.round(11.5 * fatMultiplier), scale: 1 },
-            { name: "Cold Spiced Chaas", cal: 55, p: 3.2, c: 5, f: 2.2, scale: 1 }
+            { name: "Gatte Ki Sabzi (1 katori)", cal: Math.round(185 * multiplier), p: 7.0, c: 14.5, f: Math.round(11.2 * fatMultiplier), scale: 1 },
+            { name: "Spiced Jeera Chaas", cal: 55, p: 3.4, c: 5.0, f: 2.2, scale: 1 }
           ];
 
           setScanResult({
-            title: thaliName,
+            title: title,
+            image: image,
             items: baseItems,
             totalCal: baseItems.reduce((s, i) => s + i.cal, 0),
             p: Math.round(baseItems.reduce((s, i) => s + i.p, 0)),
             c: Math.round(baseItems.reduce((s, i) => s + i.c, 0)),
             f: Math.round(baseItems.reduce((s, i) => s + i.f, 0)),
             spike: "LOW",
-            spikeExplanation: "Millet complex carbohydrates and gram flour ensure steady, flat insulin response.",
-            desiFix: "Super desi combo! 1 glass cold chaas with roasted jeera aids gut motility.",
-            confidence: 94
+            spikeExplanation: "Millet complex fiber and gram flour ensure flat, steady insulin response without fatigue.",
+            desiFix: "Classic nutritious Rajasthani pairing! Roasted jeera in chaas accelerates digestive enzymatic release.",
+            confidence: 96
           });
           setIsScanning(false);
-        }, 1200);
+        }, 1100);
       };
 
       // Adjust Portions
-      const updateItemScale = (idx, scale) => {
+      const updateItemScale = (idx, sc) => {
         if (!scanResult) return;
         const newItems = [...scanResult.items];
-        newItems[idx].scale = scale;
+        newItems[idx].scale = sc;
         const totalCal = Math.round(newItems.reduce((s, i) => s + (i.cal * i.scale), 0));
         const p = Math.round(newItems.reduce((s, i) => s + (i.p * i.scale), 0));
         const c = Math.round(newItems.reduce((s, i) => s + (i.c * i.scale), 0));
@@ -278,12 +436,12 @@
         setScanResult({ ...scanResult, items: newItems, totalCal, p, c, f });
       };
 
-      // Log scanned meal to diary
-      const logScannedMeal = () => {
+      // Log Meal
+      const logScannedMeal = (mealType = "Lunch") => {
         if (!scanResult) return;
         setMeals([...meals, {
           id: Date.now(),
-          type: activeMealType,
+          type: mealType,
           title: scanResult.title,
           cal: scanResult.totalCal,
           p: scanResult.p,
@@ -293,334 +451,476 @@
           fix: scanResult.desiFix
         }]);
         setScanResult(null);
+        setCapturedImage(null);
         setActiveTab('diary');
       };
 
       return (
-        <div class="flex flex-col min-h-screen text-nutraText relative">
+        <div className="flex flex-col min-h-screen text-nutraText bg-white relative selection:bg-nutraGreen/20">
           
-          {/* TOP BAR: Language Pill & Streak */}
-          <header class="sticky top-0 bg-white/95 backdrop-blur border-b border-nutraBorder px-4 py-3 flex items-center justify-between z-30">
-            <div class="flex items-center space-x-2">
-              <div class="w-8 h-8 rounded-full bg-nutraText flex items-center justify-center text-nutraGreen font-bold text-sm shadow-sm">
-                ✦
-              </div>
+          {/* ============================================================ */}
+          {/* TOP APP BAR: Clean Apple Style with Capital 'N' & Profile Avatar */}
+          {/* ============================================================ */}
+          <header className="sticky top-0 bg-white/90 backdrop-blur-md border-b border-nutraBorder/60 px-4 py-3 flex items-center justify-between z-30">
+            {/* Left: Brand Monogram & Name */}
+            <div className="flex items-center space-x-2.5">
+              <BrandLogo size={36} />
               <div>
-                <h1 class="text-base font-black tracking-tight">{t.appName}</h1>
-                <p class="text-[10px] text-nutraSec -mt-1 font-medium">Cal AI + MFP Hybrid</p>
+                <h1 className="text-base font-black tracking-tight text-nutraText flex items-center space-x-1">
+                  <span>{t.appName}</span>
+                </h1>
+                <p className="text-[10px] text-nutraSec -mt-0.5 font-medium tracking-tight">Cal AI + MFP Edition</p>
               </div>
             </div>
 
-            {/* Streak Badge */}
-            <div class="flex items-center space-x-1 bg-nutraCard px-2.5 py-1 rounded-full text-xs font-bold text-nutraText shadow-inner">
-              <span class="text-nutraAmber">🔥</span>
-              <span>{user.streak}d</span>
-            </div>
+            {/* Right: Streak & Profile Avatar Button */}
+            <div className="flex items-center space-x-2">
+              {/* Streak Badge */}
+              <div className="flex items-center space-x-1 bg-nutraCard px-2.5 py-1 rounded-full text-xs font-bold shadow-sm border border-nutraBorder/60">
+                <span className="text-nutraAmber">🔥</span>
+                <span>{user.streak}d</span>
+              </div>
 
-            {/* Language Pill */}
-            <div class="bg-nutraCard p-0.5 rounded-full flex text-xs font-semibold">
-              <button onClick={() => setLang('en')} class={`px-2 py-0.5 rounded-full transition-all ${lang==='en'?'bg-white shadow text-black':'text-nutraSec'}`}>EN</button>
-              <button onClick={() => setLang('hi')} class={`px-2 py-0.5 rounded-full transition-all ${lang==='hi'?'bg-white shadow text-black':'text-nutraSec'}`}>हिंदी</button>
-              <button onClick={() => setLang('hinglish')} class={`px-2 py-0.5 rounded-full transition-all ${lang==='hinglish'?'bg-white shadow text-black':'text-nutraSec'}`}>Hinglish</button>
+              {/* Language Toggle Pill */}
+              <div className="bg-nutraCard p-0.5 rounded-full flex text-[11px] font-semibold border border-nutraBorder/50">
+                <button onClick={() => setLang('en')} className={`px-2 py-0.5 rounded-full transition-all ${lang==='en'?'bg-white shadow-sm font-bold text-black':'text-nutraSec'}`}>EN</button>
+                <button onClick={() => setLang('hi')} className={`px-2 py-0.5 rounded-full transition-all ${lang==='hi'?'bg-white shadow-sm font-bold text-black':'text-nutraSec'}`}>हिंदी</button>
+                <button onClick={() => setLang('hinglish')} className={`px-2 py-0.5 rounded-full transition-all ${lang==='hinglish'?'bg-white shadow-sm font-bold text-black':'text-nutraSec'}`}>HI-EN</button>
+              </div>
+
+              {/* PROFILE PICTURE BUTTON (Opens Slide-over Drawer / Logout) */}
+              <button 
+                onClick={() => setIsProfileOpen(true)}
+                className="w-9 h-9 rounded-full ring-2 ring-nutraGreen/40 hover:ring-nutraGreen p-0.5 transition-all tap-scale relative flex-shrink-0"
+                title="Open Profile & Settings"
+              >
+                <img 
+                  src={user.avatar} 
+                  alt="Profile" 
+                  className="w-full h-full rounded-full object-cover" 
+                />
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-nutraGreen border-2 border-white rounded-full"></span>
+              </button>
             </div>
           </header>
 
-          {/* MAIN CONTENT CONTAINER */}
-          <main class="flex-1 pb-24 overflow-y-auto px-4 pt-3 space-y-4">
+          {/* ============================================================ */}
+          {/* MAIN SCROLLABLE CONTENT */}
+          {/* ============================================================ */}
+          <main className="flex-1 pb-28 px-4 pt-4 space-y-4 overflow-y-auto no-scrollbar">
 
-            {/* TAB 1: DIARY (MyFitnessPal + Cal AI Concentric Ring) */}
+            {/* ======================================================== */}
+            {/* TAB 1: DIARY (Clean, Spacious Apple/Cal AI & MFP Hybrid) */}
+            {/* ======================================================== */}
             {activeTab === 'diary' && (
-              <div class="space-y-4">
-                
-                {/* MyFitnessPal Signature Calorie Equation Bar */}
-                <div class="bg-nutraCard rounded-2xl p-4 shadow-sm border border-nutraBorder">
-                  <div class="flex justify-between items-center text-center">
-                    <div>
-                      <div class="text-xs text-nutraSec">{t.baseGoal}</div>
-                      <div class="text-base font-bold">{user.dailyCal}</div>
+              <div className="space-y-4">
+
+                {/* MyFitnessPal Calorie Equation (Clean Minimalist Bar) */}
+                <div className="bg-nutraCard rounded-3xl p-4 shadow-sm border border-nutraBorder/60">
+                  <div className="flex justify-between items-center text-center">
+                    <div className="flex-1">
+                      <div className="text-[11px] font-medium text-nutraSec uppercase tracking-wider">{t.baseGoal}</div>
+                      <div className="text-base font-bold text-nutraText">{user.dailyCal}</div>
                     </div>
-                    <div class="text-nutraSec font-bold">-</div>
-                    <div>
-                      <div class="text-xs text-nutraSec">{t.foodEaten}</div>
-                      <div class="text-base font-bold">{consumedCal}</div>
+                    <div className="text-nutraSec font-light text-sm">-</div>
+                    <div className="flex-1">
+                      <div className="text-[11px] font-medium text-nutraSec uppercase tracking-wider">{t.foodEaten}</div>
+                      <div className="text-base font-bold text-nutraText">{consumedCal}</div>
                     </div>
-                    <div class="text-nutraSec font-bold">+</div>
-                    <div>
-                      <div class="text-xs text-nutraSec">{t.exercise}</div>
-                      <div class="text-base font-bold text-nutraGreen">{user.exerciseBurn}</div>
+                    <div className="text-nutraSec font-light text-sm">+</div>
+                    <div className="flex-1">
+                      <div className="text-[11px] font-medium text-nutraSec uppercase tracking-wider">{t.exercise}</div>
+                      <div className="text-base font-bold text-nutraGreen">+{user.exerciseBurn}</div>
                     </div>
-                    <div class="text-nutraSec font-bold">=</div>
-                    <div>
-                      <div class="text-xs text-nutraSec font-bold">{t.remaining}</div>
-                      <div class="text-lg font-black text-nutraText">{remainingCal}</div>
+                    <div className="text-nutraSec font-light text-sm">=</div>
+                    <div className="flex-1">
+                      <div className="text-[11px] font-bold text-nutraText uppercase tracking-wider">{t.remaining}</div>
+                      <div className="text-lg font-black text-nutraText">{remainingCal}</div>
                     </div>
                   </div>
                 </div>
 
-                {/* Cal AI Concentric Rings Card */}
-                <div class="bg-nutraCard rounded-3xl p-5 shadow-sm text-center relative overflow-hidden">
-                  <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs font-bold text-nutraSec uppercase tracking-wider">Today's Nutrition</span>
-                    <span class="text-xs font-bold bg-white px-2 py-1 rounded-full shadow-sm">{Math.round((consumedCal/user.dailyCal)*100)}% Goal</span>
+                {/* Cal AI Signature Concentric Rings Visualizer */}
+                <div className="bg-nutraCard rounded-3xl p-5 shadow-sm border border-nutraBorder/60 text-center relative overflow-hidden">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs font-bold text-nutraSec uppercase tracking-wider">Today's Nutrition</span>
+                    <span className="text-xs font-bold bg-white text-nutraGreen px-2.5 py-0.5 rounded-full shadow-sm border border-nutraBorder/50">
+                      {Math.round((consumedCal / user.dailyCal) * 100)}% Consumed
+                    </span>
                   </div>
 
-                  {/* Concentric Rings Visualizer */}
-                  <div class="relative w-44 h-44 mx-auto flex items-center justify-center my-1">
-                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                      {/* Calories Ring */}
-                      <circle cx="50" cy="50" r="42" stroke="#E5E5EA" stroke-width="7" fill="none" />
-                      <circle cx="50" cy="50" r="42" stroke="#0A0A0A" stroke-width="7" stroke-dasharray="264" stroke-dashoffset={264 - (264 * Math.min(1, consumedCal / user.dailyCal))} stroke-linecap="round" fill="none" />
+                  {/* SVG Concentric Activity Rings */}
+                  <div className="relative w-48 h-48 mx-auto flex items-center justify-center my-2">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      {/* Calories Outer Ring */}
+                      <circle cx="50" cy="50" r="42" stroke="#EAEAEF" strokeWidth="6.5" fill="none" />
+                      <circle 
+                        cx="50" cy="50" r="42" 
+                        stroke="#0A0A0A" 
+                        strokeWidth="6.5" 
+                        strokeDasharray="264" 
+                        strokeDashoffset={264 - (264 * Math.min(1, consumedCal / user.dailyCal))} 
+                        strokeLinecap="round" 
+                        fill="none" 
+                      />
                       
-                      {/* Protein Ring */}
-                      <circle cx="50" cy="50" r="32" stroke="#34C759" stroke-opacity="0.2" stroke-width="6" fill="none" />
-                      <circle cx="50" cy="50" r="32" stroke="#34C759" stroke-width="6" stroke-dasharray="201" stroke-dashoffset={201 - (201 * Math.min(1, consumedP / user.proteinG))} stroke-linecap="round" fill="none" />
+                      {/* Protein Middle Ring */}
+                      <circle cx="50" cy="50" r="33" stroke="#34C759" strokeOpacity="0.18" strokeWidth="5.5" fill="none" />
+                      <circle 
+                        cx="50" cy="50" r="33" 
+                        stroke="#34C759" 
+                        strokeWidth="5.5" 
+                        strokeDasharray="207" 
+                        strokeDashoffset={207 - (207 * Math.min(1, consumedP / user.proteinG))} 
+                        strokeLinecap="round" 
+                        fill="none" 
+                      />
 
-                      {/* Carbs Ring */}
-                      <circle cx="50" cy="50" r="23" stroke="#FF9F0A" stroke-opacity="0.2" stroke-width="5" fill="none" />
-                      <circle cx="50" cy="50" r="23" stroke="#FF9F0A" stroke-width="5" stroke-dasharray="144" stroke-dashoffset={144 - (144 * Math.min(1, consumedC / user.carbsG))} stroke-linecap="round" fill="none" />
+                      {/* Carbs Inner Ring */}
+                      <circle cx="50" cy="50" r="25" stroke="#FF9F0A" strokeOpacity="0.2" strokeWidth="4.5" fill="none" />
+                      <circle 
+                        cx="50" cy="50" r="25" 
+                        stroke="#FF9F0A" 
+                        strokeWidth="4.5" 
+                        strokeDasharray="157" 
+                        strokeDashoffset={157 - (157 * Math.min(1, consumedC / user.carbsG))} 
+                        strokeLinecap="round" 
+                        fill="none" 
+                      />
                     </svg>
 
-                    <div class="absolute inset-0 flex flex-col items-center justify-center">
-                      <span class="text-3xl font-black tracking-tight">{remainingCal}</span>
-                      <span class="text-[11px] text-nutraSec font-semibold -mt-1">kcal left</span>
+                    {/* Ring Center Text */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-3xl font-black tracking-tight">{remainingCal}</span>
+                      <span className="text-[11px] text-nutraSec font-semibold -mt-1">kcal left</span>
                     </div>
                   </div>
 
-                  {/* Macro Pills */}
-                  <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-nutraBorder text-xs">
+                  {/* 3 Macro Target Bars */}
+                  <div className="grid grid-cols-3 gap-3 pt-3 border-t border-nutraBorder/60 text-xs">
                     <div>
-                      <div class="flex items-center justify-center space-x-1 text-nutraSec">
-                        <span class="w-2 h-2 rounded-full bg-nutraGreen"></span>
-                        <span>Protein</span>
+                      <div className="flex items-center justify-center space-x-1.5 text-nutraSec mb-0.5">
+                        <span className="w-2 h-2 rounded-full bg-nutraGreen"></span>
+                        <span className="font-medium">Protein</span>
                       </div>
-                      <div class="font-bold text-sm">{Math.round(consumedP)}g <span class="text-nutraSec text-[10px]">/{user.proteinG}g</span></div>
+                      <div className="font-bold text-sm">{Math.round(consumedP)}g <span className="text-[10px] text-nutraSec">/{user.proteinG}g</span></div>
+                      <div className="w-full bg-gray-200 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                        <div className="bg-nutraGreen h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (consumedP / user.proteinG) * 100)}%` }}></div>
+                      </div>
                     </div>
                     <div>
-                      <div class="flex items-center justify-center space-x-1 text-nutraSec">
-                        <span class="w-2 h-2 rounded-full bg-nutraAmber"></span>
-                        <span>Carbs</span>
+                      <div className="flex items-center justify-center space-x-1.5 text-nutraSec mb-0.5">
+                        <span className="w-2 h-2 rounded-full bg-nutraAmber"></span>
+                        <span className="font-medium">Carbs</span>
                       </div>
-                      <div class="font-bold text-sm">{Math.round(consumedC)}g <span class="text-nutraSec text-[10px]">/{user.carbsG}g</span></div>
+                      <div className="font-bold text-sm">{Math.round(consumedC)}g <span className="text-[10px] text-nutraSec">/{user.carbsG}g</span></div>
+                      <div className="w-full bg-gray-200 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                        <div className="bg-nutraAmber h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (consumedC / user.carbsG) * 100)}%` }}></div>
+                      </div>
                     </div>
                     <div>
-                      <div class="flex items-center justify-center space-x-1 text-nutraSec">
-                        <span class="w-2 h-2 rounded-full bg-nutraRed"></span>
-                        <span>Fats</span>
+                      <div className="flex items-center justify-center space-x-1.5 text-nutraSec mb-0.5">
+                        <span className="w-2 h-2 rounded-full bg-nutraRed"></span>
+                        <span className="font-medium">Fats</span>
                       </div>
-                      <div class="font-bold text-sm">{Math.round(consumedF)}g <span class="text-nutraSec text-[10px]">/{user.fatG}g</span></div>
+                      <div className="font-bold text-sm">{Math.round(consumedF)}g <span className="text-[10px] text-nutraSec">/{user.fatG}g</span></div>
+                      <div className="w-full bg-gray-200 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                        <div className="bg-nutraRed h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (consumedF / user.fatG) * 100)}%` }}></div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Hero Banner: "Thali Scan Karein" */}
-                <div onClick={() => setActiveTab('scan')} class="bg-nutraText text-white p-5 rounded-3xl shadow-lg flex items-center justify-between cursor-pointer tap-scale">
-                  <div>
-                    <span class="text-[10px] font-black uppercase tracking-wider text-nutraGreen flex items-center space-x-1 mb-1">
-                      <span class="w-2 h-2 rounded-full bg-nutraGreen animate-pulse"></span>
+                {/* Hero Action Card: "Thali Scan Karein" */}
+                <div 
+                  onClick={() => setActiveTab('scan')} 
+                  className="bg-nutraText text-white p-5 rounded-3xl shadow-md flex items-center justify-between cursor-pointer tap-scale"
+                >
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-nutraGreen flex items-center space-x-1.5">
+                      <span className="w-2 h-2 rounded-full bg-nutraGreen animate-ping"></span>
                       <span>Flash AI Scanner</span>
                     </span>
-                    <h2 class="text-xl font-bold tracking-tight">{t.scanHeroTitle}</h2>
-                    <p class="text-xs text-white/70 mt-0.5 pr-2">{t.scanHeroSub}</p>
+                    <h2 className="text-xl font-bold tracking-tight">{t.scanHeroTitle}</h2>
+                    <p className="text-xs text-white/70 max-w-[240px]">{t.scanHeroSub}</p>
                   </div>
-                  <div class="w-12 h-12 rounded-full bg-white text-nutraText flex items-center justify-center text-xl shadow flex-shrink-0">
-                    📷
+                  <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-2xl flex-shrink-0">
+                    📸
                   </div>
                 </div>
 
-                {/* MyFitnessPal Meal-by-Meal Sections */}
-                <div class="space-y-3">
-                  <h3 class="text-sm font-bold text-nutraSec uppercase tracking-wider">Today's Meals</h3>
+                {/* Water Hydration Tracker with Quick Tap */}
+                <div className="bg-nutraCard rounded-3xl p-4 shadow-sm border border-nutraBorder/60 flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-2xl bg-nutraBlue/10 text-nutraBlue flex items-center justify-center text-xl">
+                      💧
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-nutraText">{t.waterTracker}</div>
+                      <div className="text-[11px] text-nutraSec">{waterGlasses} of 8 {t.glasses} ({(waterGlasses * 250)} ml)</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button 
+                      onClick={() => setWaterGlasses(Math.max(0, waterGlasses - 1))}
+                      className="w-8 h-8 rounded-full bg-white border border-nutraBorder text-sm font-bold flex items-center justify-center tap-scale shadow-sm"
+                    >
+                      -
+                    </button>
+                    <button 
+                      onClick={() => setWaterGlasses(waterGlasses + 1)}
+                      className="w-8 h-8 rounded-full bg-nutraBlue text-white text-sm font-bold flex items-center justify-center tap-scale shadow-sm"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Today's Meals Section */}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center px-1">
+                    <h3 className="text-xs font-bold text-nutraSec uppercase tracking-wider">Today's Meals</h3>
+                    <button 
+                      onClick={() => setActiveTab('search')}
+                      className="text-xs font-bold text-nutraGreen hover:underline"
+                    >
+                      + Quick Add Food
+                    </button>
+                  </div>
 
                   {['Breakfast', 'Lunch', 'Snacks', 'Dinner'].map(mealCat => {
                     const catMeals = meals.filter(m => m.type === mealCat);
                     const catCal = catMeals.reduce((s, m) => s + m.cal, 0);
 
                     return (
-                      <div key={mealCat} class="bg-nutraCard rounded-2xl p-4 shadow-sm border border-nutraBorder">
-                        <div class="flex justify-between items-center mb-2">
-                          <div class="flex items-center space-x-2">
-                            <span class="text-base">{mealCat === 'Breakfast' ? '🌅' : mealCat === 'Lunch' ? '☀️' : mealCat === 'Snacks' ? '🌆' : '🌙'}</span>
-                            <span class="font-bold text-sm">{mealCat}</span>
+                      <div key={mealCat} className="bg-nutraCard rounded-2xl p-4 shadow-sm border border-nutraBorder/60 space-y-2">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm">
+                              {mealCat === 'Breakfast' ? '🌅' : mealCat === 'Lunch' ? '☀️' : mealCat === 'Snacks' ? '☕' : '🌙'}
+                            </span>
+                            <span className="font-bold text-sm text-nutraText">{mealCat}</span>
                           </div>
-                          <span class="text-xs font-bold text-nutraSec">{catCal} kcal</span>
+                          <span className="text-xs font-bold text-nutraSec">{catCal} kcal</span>
                         </div>
 
-                        {/* List of logged meals */}
-                        {catMeals.length > 0 && (
-                          <div class="space-y-1.5 mb-2.5">
+                        {/* List items */}
+                        {catMeals.length > 0 ? (
+                          <div className="space-y-2 pt-1 border-t border-nutraBorder/40">
                             {catMeals.map(m => (
-                              <div key={m.id} class="bg-white p-2.5 rounded-xl flex justify-between items-center text-xs shadow-xs">
+                              <div key={m.id} className="flex justify-between items-center text-xs bg-white p-2.5 rounded-xl border border-nutraBorder/40">
                                 <div>
-                                  <div class="font-semibold text-nutraText">{m.title}</div>
-                                  <div class="text-[11px] text-nutraSec">P: {m.p}g • C: {m.c}g • F: {m.f}g</div>
+                                  <div className="font-bold text-nutraText">{m.title}</div>
+                                  <div className="text-[10px] text-nutraSec">P: {m.p}g • C: {m.c}g • F: {m.f}g</div>
                                 </div>
-                                <span class="font-bold text-nutraText">{m.cal} kcal</span>
+                                <div className="text-right">
+                                  <div className="font-bold text-nutraText">{m.cal} kcal</div>
+                                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${m.spike === 'LOW' ? 'bg-nutraGreen/15 text-nutraGreen' : m.spike === 'MED' ? 'bg-nutraAmber/15 text-nutraAmber' : 'bg-nutraRed/15 text-nutraRed'}`}>
+                                    {m.spike} Spike
+                                  </span>
+                                </div>
                               </div>
                             ))}
                           </div>
+                        ) : (
+                          <button 
+                            onClick={() => {
+                              setActiveTab('search');
+                            }}
+                            className="w-full py-2 text-center text-xs font-semibold text-nutraSec hover:text-black border border-dashed border-nutraBorder rounded-xl"
+                          >
+                            + Add {mealCat}
+                          </button>
                         )}
-
-                        {/* + ADD FOOD Button */}
-                        <button
-                          onClick={() => { setActiveMealType(mealCat); setShowQuickAdd(true); }}
-                          class="w-full bg-white hover:bg-gray-100 border border-nutraBorder rounded-xl py-2 text-xs font-bold text-nutraText flex items-center justify-center space-x-1 tap-scale"
-                        >
-                          <span>+ ADD FOOD</span>
-                        </button>
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Water Tracker */}
-                <div class="bg-nutraCard rounded-2xl p-4 shadow-sm border border-nutraBorder">
-                  <div class="flex justify-between items-center mb-3">
-                    <div class="flex items-center space-x-1.5">
-                      <span class="text-nutraBlue text-base">💧</span>
-                      <span class="font-bold text-sm">{t.waterTracker}</span>
-                    </div>
-                    <span class="text-xs font-bold text-nutraBlue">{waterGlasses}/10 {t.glasses} ({waterGlasses * 250} ml)</span>
-                  </div>
-
-                  <div class="flex items-center justify-between">
-                    <div class="flex space-x-1">
-                      {[1,2,3,4,5,6,7,8].map(i => (
-                        <div key={i} class={`w-4 h-7 rounded-sm ${i <= waterGlasses ? 'bg-nutraBlue' : 'bg-gray-200'}`}></div>
-                      ))}
-                    </div>
-                    <button onClick={() => setWaterGlasses(Math.min(15, waterGlasses + 1))} class="bg-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm tap-scale">
-                      +250 ml Glass
-                    </button>
-                  </div>
-                </div>
-
-                {/* Weekly Habit Insight */}
-                <div class="bg-nutraCard rounded-2xl p-4 shadow-sm border border-nutraBorder flex items-start space-x-3">
-                  <span class="text-xl">💡</span>
-                  <div class="text-xs leading-relaxed">
-                    <span class="font-bold block text-nutraText mb-0.5">Desi Dietary Tip</span>
-                    <p class="text-nutraSec">Roti se pehle ek katori salad ya chaas lene se post-meal glucose spike 35% tak slow ho jata hai. Perfect for steady afternoon energy!</p>
-                  </div>
-                </div>
-
               </div>
             )}
 
-            {/* TAB 2: SEARCH & CUSTOM FOOD (MyFitnessPal Food Hub) */}
+            {/* ======================================================== */}
+            {/* TAB 2: SEARCH & INDIAN FOOD DATABASE */}
+            {/* ======================================================== */}
             {activeTab === 'search' && (
-              <div class="space-y-4">
-                <div class="flex justify-between items-center">
-                  <h2 class="text-xl font-bold">Food Database</h2>
-                  <span class="text-xs bg-nutraCard px-2.5 py-1 rounded-full font-bold">ICMR-NIN 2024</span>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <h2 className="text-xl font-bold tracking-tight">ICMR-NIN Food Database</h2>
+                  <p className="text-xs text-nutraSec">Search Indian dishes with accurate nutrition profiles.</p>
                 </div>
 
-                {/* Search Bar */}
-                <div class="relative">
-                  <input
-                    type="text"
-                    placeholder="Search bajre ki roti, dal baati, paneer..."
-                    class="w-full bg-nutraCard border border-nutraBorder rounded-2xl py-3 pl-10 pr-4 text-xs font-medium focus:outline-none focus:border-black"
+                {/* Search Input Bar */}
+                <div className="relative">
+                  <input 
+                    type="text" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search bajre ki roti, gatte, biryani..." 
+                    className="w-full bg-nutraCard border border-nutraBorder rounded-2xl py-3 px-4 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-black pr-10"
                   />
-                  <span class="absolute left-3.5 top-3 text-nutraSec">🔍</span>
+                  {searchQuery && (
+                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-3 text-xs text-nutraSec font-bold">✕</button>
+                  )}
                 </div>
 
-                {/* Food List */}
-                <div class="space-y-2.5">
-                  {indianFoodDB.map(f => (
-                    <div key={f.id} class="bg-nutraCard p-3.5 rounded-2xl flex justify-between items-center shadow-xs">
-                      <div>
-                        <div class="font-bold text-sm flex items-center space-x-1">
-                          <span>{f.name}</span>
-                          <span class="text-nutraGreen text-xs">✓</span>
-                        </div>
-                        <div class="text-[11px] text-nutraSec">{f.desc} • {f.cat}</div>
-                        <div class="text-[11px] text-nutraSec mt-0.5">P: {f.p}g • C: {f.c}g • F: {f.f}g</div>
-                      </div>
-                      <div class="text-right flex flex-col items-end space-y-1">
-                        <span class="font-bold text-sm">{f.cal} kcal</span>
-                        <button
-                          onClick={() => {
-                            setMeals([...meals, { id: Date.now(), type: activeMealType, title: f.name, cal: f.cal, p: f.p, c: f.c, f: f.f, spike: f.spike, fix: f.fix }]);
-                            alert(`Added ${f.name} to ${activeMealType}!`);
-                          }}
-                          class="bg-nutraText text-white text-[11px] font-bold px-2.5 py-1 rounded-lg tap-scale"
-                        >
-                          + ADD
-                        </button>
-                      </div>
-                    </div>
+                {/* Category Filter Pills */}
+                <div className="flex space-x-2 overflow-x-auto pb-1 no-scrollbar text-xs font-medium">
+                  {['All', 'Breads & Roti', 'Sabzi & Curries', 'Traditional Thali', 'Breakfast', 'Beverages'].map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-3 py-1.5 rounded-full flex-shrink-0 transition-all ${selectedCategory === cat ? 'bg-black text-white font-bold' : 'bg-nutraCard text-nutraSec border border-nutraBorder'}`}
+                    >
+                      {cat}
+                    </button>
                   ))}
                 </div>
+
+                {/* Food Item Cards */}
+                <div className="space-y-2.5">
+                  {indianFoodDB
+                    .filter(f => selectedCategory === 'All' || f.cat === selectedCategory)
+                    .filter(f => !searchQuery || f.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .map(item => (
+                      <div key={item.id} className="bg-nutraCard p-3.5 rounded-2xl border border-nutraBorder/60 flex justify-between items-center shadow-sm">
+                        <div className="space-y-1">
+                          <div className="font-bold text-xs text-nutraText">{item.name}</div>
+                          <div className="text-[11px] text-nutraSec">{item.desc}</div>
+                          <div className="flex items-center space-x-2 text-[10px] pt-0.5">
+                            <span className="text-nutraGreen font-semibold">P: {item.p}g</span>
+                            <span className="text-nutraAmber font-semibold">C: {item.c}g</span>
+                            <span className="text-nutraRed font-semibold">F: {item.f}g</span>
+                            <span className="text-nutraSec">• {item.cat}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-end space-y-1.5">
+                          <span className="font-black text-sm">{item.cal} kcal</span>
+                          <button
+                            onClick={() => {
+                              setMeals([...meals, {
+                                id: Date.now(),
+                                type: "Lunch",
+                                title: item.name,
+                                cal: item.cal,
+                                p: item.p,
+                                c: item.c,
+                                f: item.f,
+                                spike: item.spike,
+                                fix: item.fix
+                              }]);
+                              setActiveTab('diary');
+                            }}
+                            className="bg-black text-white px-3 py-1 rounded-xl text-[11px] font-bold tap-scale shadow-sm"
+                          >
+                            + Log
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
               </div>
             )}
 
-            {/* TAB 3: SCAN AI (Cal AI Circular Camera & Demo Scanner) */}
+            {/* ======================================================== */}
+            {/* TAB 3: SCAN AI (Live Camera, Flip, Flash & Real Preview) */}
+            {/* ======================================================== */}
             {activeTab === 'scan' && (
-              <div class="space-y-4">
+              <div className="space-y-4">
                 
                 {/* Result Screen if Scanned */}
                 {scanResult ? (
-                  <div class="space-y-4">
-                    <div class="flex justify-between items-center">
-                      <button onClick={() => setScanResult(null)} class="text-xs font-bold text-nutraSec">← Scan Again</button>
-                      <span class="text-xs font-bold bg-nutraGreen/20 text-nutraGreen px-2 py-0.5 rounded-full">{scanResult.confidence}% AI Confidence</span>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <button 
+                        onClick={() => {
+                          setScanResult(null);
+                          setCapturedImage(null);
+                          startCamera();
+                        }} 
+                        className="text-xs font-bold text-nutraSec flex items-center space-x-1"
+                      >
+                        <span>← Scan Another Thali</span>
+                      </button>
+                      <span className="text-xs font-bold bg-nutraGreen/15 text-nutraGreen px-2.5 py-0.5 rounded-full">
+                        {scanResult.confidence}% AI Confidence
+                      </span>
                     </div>
 
-                    {/* Calorie Card */}
-                    <div class="bg-nutraCard rounded-3xl p-6 text-center shadow-sm">
-                      <div class="text-4xl font-black">{scanResult.totalCal}</div>
-                      <div class="text-xs font-semibold text-nutraSec mt-0.5">Total Calories (kcal)</div>
+                    {/* Meal Preview & Big Calorie Badge */}
+                    <div className="bg-nutraCard rounded-3xl p-5 text-center shadow-sm border border-nutraBorder/60 space-y-3">
+                      {scanResult.image && (
+                        <div className="w-24 h-24 mx-auto rounded-2xl overflow-hidden shadow-inner border border-nutraBorder">
+                          <img src={scanResult.image} alt="Scanned meal" className="w-full h-full object-cover" />
+                        </div>
+                      )}
 
-                      <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-nutraBorder text-xs">
-                        <div><div class="text-nutraSec">Protein</div><div class="font-bold text-sm text-nutraGreen">{scanResult.p}g</div></div>
-                        <div><div class="text-nutraSec">Carbs</div><div class="font-bold text-sm text-nutraAmber">{scanResult.c}g</div></div>
-                        <div><div class="text-nutraSec">Fat</div><div class="font-bold text-sm text-nutraRed">{scanResult.f}g</div></div>
+                      <div>
+                        <div className="text-4xl font-black tracking-tight">{scanResult.totalCal}</div>
+                        <div className="text-xs font-semibold text-nutraSec">Total Calories (kcal)</div>
+                      </div>
+
+                      {/* Animated Macro Split */}
+                      <div className="grid grid-cols-3 gap-2 pt-3 border-t border-nutraBorder/60 text-xs">
+                        <div className="bg-white p-2 rounded-xl">
+                          <div className="text-nutraSec text-[10px]">Protein</div>
+                          <div className="font-bold text-sm text-nutraGreen">{scanResult.p}g</div>
+                        </div>
+                        <div className="bg-white p-2 rounded-xl">
+                          <div className="text-nutraSec text-[10px]">Carbohydrates</div>
+                          <div className="font-bold text-sm text-nutraAmber">{scanResult.c}g</div>
+                        </div>
+                        <div className="bg-white p-2 rounded-xl">
+                          <div className="text-nutraSec text-[10px]">Healthy Fats</div>
+                          <div className="font-bold text-sm text-nutraRed">{scanResult.f}g</div>
+                        </div>
                       </div>
                     </div>
 
                     {/* Sugar Spike Meter Gauge */}
-                    <div class="bg-nutraCard rounded-2xl p-4 shadow-sm border border-nutraBorder">
-                      <div class="flex justify-between items-center mb-2">
-                        <span class="font-bold text-sm flex items-center space-x-1">
+                    <div className="bg-nutraCard rounded-2xl p-4 shadow-sm border border-nutraBorder/60 space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-xs flex items-center space-x-1.5">
                           <span>⚡</span>
                           <span>{t.sugarSpike}</span>
                         </span>
-                        <span class="text-xs font-bold bg-nutraGreen/20 text-nutraGreen px-2 py-0.5 rounded-full">
-                          {scanResult.spike} Spike (Optimal)
+                        <span className="text-[11px] font-bold bg-nutraGreen/15 text-nutraGreen px-2 py-0.5 rounded-full">
+                          {scanResult.spike} Glycemic Load
                         </span>
                       </div>
-                      <div class="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden my-2 flex">
-                        <div class="w-1/3 bg-nutraGreen"></div>
-                        <div class="w-1/3 bg-nutraAmber"></div>
-                        <div class="w-1/3 bg-nutraRed"></div>
+                      <div className="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden flex">
+                        <div className="w-1/3 bg-nutraGreen"></div>
+                        <div className="w-1/3 bg-nutraAmber opacity-40"></div>
+                        <div className="w-1/3 bg-nutraRed opacity-40"></div>
                       </div>
-                      <p class="text-xs text-nutraSec mt-1">{scanResult.spikeExplanation}</p>
+                      <p className="text-[11px] text-nutraSec pt-1">{scanResult.spikeExplanation}</p>
                     </div>
 
-                    {/* Desi Health Fix */}
-                    <div class="bg-nutraCard rounded-2xl p-4 shadow-sm border border-nutraBorder flex items-start space-x-3">
-                      <span class="text-xl">🌿</span>
-                      <div class="text-xs">
-                        <div class="font-bold text-nutraText mb-0.5">{t.desiHealthFix}</div>
-                        <p class="text-nutraSec">{scanResult.desiFix}</p>
+                    {/* Desi Health Fix Recommendation */}
+                    <div className="bg-nutraCard rounded-2xl p-4 shadow-sm border border-nutraBorder/60 flex items-start space-x-3">
+                      <span className="text-2xl">🌿</span>
+                      <div className="text-xs space-y-0.5">
+                        <div className="font-bold text-nutraText">{t.desiHealthFix}</div>
+                        <p className="text-nutraSec leading-relaxed">{scanResult.desiFix}</p>
                       </div>
                     </div>
 
-                    {/* Portion Adjustments */}
-                    <div class="space-y-2">
-                      <div class="text-xs font-bold text-nutraSec uppercase tracking-wider">{t.portionConfirm}</div>
+                    {/* Portion Adjustments (0.5x, 1x, 1.5x, 2x) */}
+                    <div className="space-y-2">
+                      <div className="text-xs font-bold text-nutraSec uppercase tracking-wider">{t.portionConfirm}</div>
                       {scanResult.items.map((item, idx) => (
-                        <div key={idx} class="bg-nutraCard p-3 rounded-2xl flex justify-between items-center">
+                        <div key={idx} className="bg-nutraCard p-3 rounded-2xl flex justify-between items-center border border-nutraBorder/60">
                           <div>
-                            <div class="font-bold text-xs">{item.name}</div>
-                            <div class="text-[10px] text-nutraSec">{Math.round(item.cal * item.scale)} kcal</div>
+                            <div className="font-bold text-xs">{item.name}</div>
+                            <div className="text-[10px] text-nutraSec">{Math.round(item.cal * item.scale)} kcal</div>
                           </div>
-                          <div class="flex space-x-1">
+                          <div className="flex space-x-1">
                             {[0.5, 1, 1.5, 2].map(sc => (
                               <button
                                 key={sc}
                                 onClick={() => updateItemScale(idx, sc)}
-                                class={`px-2 py-1 rounded-lg text-[10px] font-bold ${item.scale === sc ? 'bg-black text-white' : 'bg-white text-black'}`}
+                                className={`px-2.5 py-1 rounded-xl text-[10px] font-bold tap-scale ${item.scale === sc ? 'bg-black text-white shadow-sm' : 'bg-white text-black border border-nutraBorder'}`}
                               >
                                 {sc}x
                               </button>
@@ -630,259 +930,529 @@
                       ))}
                     </div>
 
-                    {/* Log Button */}
+                    {/* Log to Diary Button */}
                     <button
-                      onClick={logScannedMeal}
-                      class="w-full bg-nutraText text-white py-3.5 rounded-2xl font-bold text-sm shadow-lg tap-scale"
+                      onClick={() => logScannedMeal("Lunch")}
+                      className="w-full bg-nutraText text-white py-3.5 rounded-2xl font-bold text-sm shadow-lg tap-scale"
                     >
                       {t.logMeal}
                     </button>
                   </div>
                 ) : (
-                  <div class="space-y-4">
-                    <h2 class="text-xl font-bold">Thali AI Camera</h2>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h2 className="text-xl font-bold tracking-tight">Thali AI Camera</h2>
+                      <span className="text-[11px] font-bold bg-nutraGreen/15 text-nutraGreen px-2.5 py-1 rounded-full">
+                        ICMR-NIN Powered
+                      </span>
+                    </div>
 
                     {/* Cooking Style Selector */}
                     <div>
-                      <div class="text-xs font-bold text-nutraSec mb-2 uppercase">{t.cookingStyle}</div>
-                      <div class="grid grid-cols-3 gap-2 text-xs">
+                      <div className="text-xs font-bold text-nutraSec mb-2 uppercase tracking-wider">{t.cookingStyle}</div>
+                      <div className="grid grid-cols-3 gap-2 text-xs">
                         <button
                           onClick={() => setCookingStyle('normal')}
-                          class={`p-2.5 rounded-xl border text-center transition-all ${cookingStyle==='normal'?'bg-black text-white border-black font-bold':'bg-nutraCard border-nutraBorder'}`}
+                          className={`p-2.5 rounded-2xl border text-center transition-all ${cookingStyle==='normal'?'bg-black text-white border-black font-bold shadow-sm':'bg-nutraCard border-nutraBorder text-nutraText'}`}
                         >
                           <div>Home</div>
-                          <div class="text-[9px] opacity-75">1 tsp oil</div>
+                          <div className="text-[9px] opacity-75">1 tsp oil</div>
                         </button>
                         <button
                           onClick={() => setCookingStyle('ghee')}
-                          class={`p-2.5 rounded-xl border text-center transition-all ${cookingStyle==='ghee'?'bg-black text-white border-black font-bold':'bg-nutraCard border-nutraBorder'}`}
+                          className={`p-2.5 rounded-2xl border text-center transition-all ${cookingStyle==='ghee'?'bg-black text-white border-black font-bold shadow-sm':'bg-nutraCard border-nutraBorder text-nutraText'}`}
                         >
                           <div>Extra Ghee</div>
-                          <div class="text-[9px] opacity-75">+1.5 tbsp</div>
+                          <div className="text-[9px] opacity-75">+1.5 tbsp</div>
                         </button>
                         <button
                           onClick={() => setCookingStyle('dhaba')}
-                          class={`p-2.5 rounded-xl border text-center transition-all ${cookingStyle==='dhaba'?'bg-black text-white border-black font-bold':'bg-nutraCard border-nutraBorder'}`}
+                          className={`p-2.5 rounded-2xl border text-center transition-all ${cookingStyle==='dhaba'?'bg-black text-white border-black font-bold shadow-sm':'bg-nutraCard border-nutraBorder text-nutraText'}`}
                         >
                           <div>Dhaba Rich</div>
-                          <div class="text-[9px] opacity-75">+35% fat</div>
+                          <div className="text-[9px] opacity-75">+35% fat</div>
                         </button>
                       </div>
                     </div>
 
-                    {/* Circular Viewfinder */}
-                    <div class="w-64 h-64 mx-auto rounded-full bg-black relative flex items-center justify-center border-4 border-gray-800 shadow-inner overflow-hidden">
-                      <div class="absolute inset-4 rounded-full border border-dashed border-white/40 animate-spin" style={{ animationDuration: '20s' }}></div>
-                      <div class="text-center text-white px-6">
-                        <span class="text-3xl block mb-1">📷</span>
-                        <span class="text-xs font-medium opacity-80">Center plate in circle</span>
+                    {/* ======================================================== */}
+                    {/* LIVE CAMERA VIEWFINDER (Circular Lens with real Video) */}
+                    {/* ======================================================== */}
+                    <div className="relative w-64 h-64 mx-auto rounded-full overflow-hidden bg-black shadow-xl border-4 border-gray-900 flex items-center justify-center">
+                      {/* Live Video Element */}
+                      <video 
+                        ref={videoRef} 
+                        playsInline 
+                        autoPlay 
+                        muted 
+                        className={`w-full h-full object-cover ${cameraActive ? 'block' : 'hidden'}`}
+                      />
+
+                      {/* Circular scanning laser ring */}
+                      <div className="absolute inset-2 rounded-full border border-dashed border-white/40 pointer-events-none animate-spin" style={{ animationDuration: '24s' }}></div>
+
+                      {/* Reticle Focus Indicator */}
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-20 h-20 border-2 border-nutraGreen/60 rounded-full animate-pulse"></div>
+                      </div>
+
+                      {/* Fallback Message if camera is off or denied */}
+                      {(!cameraActive || cameraError) && (
+                        <div className="absolute inset-0 bg-neutral-900 flex flex-col items-center justify-center text-center p-4 text-white z-10">
+                          <span className="text-3xl mb-2">📸</span>
+                          <p className="text-xs font-semibold">Camera Ready</p>
+                          <p className="text-[10px] text-white/60 mt-1 max-w-[180px]">
+                            {cameraError ? "Tap below to activate or choose photo" : "Align your plate inside circle"}
+                          </p>
+                          <button 
+                            onClick={() => startCamera()}
+                            className="mt-3 bg-white text-black text-[11px] font-bold px-3 py-1.5 rounded-full tap-scale shadow"
+                          >
+                            Enable Live Camera
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Hidden Native File Input for Gallery / Direct Camera */}
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      accept="image/*" 
+                      capture="environment" 
+                      onChange={handleFileUpload} 
+                      className="hidden" 
+                    />
+
+                    {/* Camera Control Toolbar (Flip, Shutter, Gallery) */}
+                    <div className="flex items-center justify-center space-x-6 pt-2">
+                      {/* Flip Camera Button */}
+                      <button 
+                        onClick={flipCamera} 
+                        className="w-12 h-12 rounded-full bg-nutraCard border border-nutraBorder flex items-center justify-center text-lg tap-scale shadow-sm"
+                        title="Flip Camera"
+                      >
+                        🔄
+                      </button>
+
+                      {/* Main Big Shutter Button */}
+                      <button
+                        onClick={captureSnapshot}
+                        className="w-18 h-18 w-[72px] h-[72px] rounded-full bg-nutraText text-white border-4 border-white shutter-glow flex items-center justify-center text-2xl tap-scale shadow-xl"
+                        title="Capture Plate"
+                      >
+                        📷
+                      </button>
+
+                      {/* Gallery / File Upload Button */}
+                      <button 
+                        onClick={() => fileInputRef.current && fileInputRef.current.click()} 
+                        className="w-12 h-12 rounded-full bg-nutraCard border border-nutraBorder flex items-center justify-center text-lg tap-scale shadow-sm"
+                        title="Choose from Gallery"
+                      >
+                        🖼️
+                      </button>
+                    </div>
+
+                    {/* One-Tap Realistic Food Demo Presets (Instant scan tests) */}
+                    <div className="space-y-1.5 pt-2">
+                      <div className="text-[11px] font-bold text-nutraSec uppercase tracking-wider text-center">Or Try Instant Preset Scans</div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => runAiAnalysis("Rajasthani Dal Baati Churma Thali")}
+                          className="p-2.5 bg-nutraCard border border-nutraBorder rounded-2xl text-left tap-scale"
+                        >
+                          <div className="font-bold text-xs">Dal Baati Churma</div>
+                          <div className="text-[10px] text-nutraSec">Traditional royal meal</div>
+                        </button>
+                        <button
+                          onClick={() => runAiAnalysis("Ghar Ki Bajre Ki Roti & Gatte")}
+                          className="p-2.5 bg-nutraCard border border-nutraBorder rounded-2xl text-left tap-scale"
+                        >
+                          <div className="font-bold text-xs">Bajra Roti & Gatte</div>
+                          <div className="text-[10px] text-nutraSec">Low glycemic thali</div>
+                        </button>
                       </div>
                     </div>
 
-                    {/* Scan Buttons */}
-                    <div class="flex space-x-2">
-                      <button
-                        onClick={() => triggerScan("North Indian Ghar Ka Thali")}
-                        class="flex-1 bg-nutraText text-white py-3 rounded-2xl font-bold text-xs tap-scale flex items-center justify-center space-x-1"
-                      >
-                        <span>Capture Photo</span>
-                      </button>
-                      <button
-                        onClick={() => triggerScan("Rajasthani Dal Baati Churma")}
-                        class="flex-1 bg-nutraCard text-nutraText border border-nutraBorder py-3 rounded-2xl font-bold text-xs tap-scale"
-                      >
-                        <span>Sample Thali</span>
-                      </button>
-                    </div>
-
-                    {/* Loading Overlay */}
+                    {/* Scanning Animation Modal */}
                     {isScanning && (
-                      <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6 text-center text-white">
-                        <div class="bg-white text-black p-6 rounded-3xl max-w-xs shadow-2xl">
-                          <div class="w-10 h-10 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-                          <h4 class="font-bold text-sm">Analyzing Masala & Tadka...</h4>
-                          <p class="text-xs text-nutraSec mt-1">Consulting ICMR-NIN Indian food database...</p>
+                      <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-6 text-center">
+                        <div className="bg-white text-black p-6 rounded-3xl max-w-xs shadow-2xl space-y-3">
+                          <div className="w-12 h-12 border-4 border-nutraGreen border-t-transparent rounded-full animate-spin mx-auto"></div>
+                          <h4 className="font-bold text-sm">Scanning Indian Plate...</h4>
+                          <p className="text-xs text-nutraSec">Extracting katoris, estimating grams & oil content via ICMR-NIN database...</p>
                         </div>
                       </div>
                     )}
                   </div>
                 )}
+
               </div>
             )}
 
-            {/* TAB 4: PROGRESS & REPORT CARD */}
-            {activeTab === 'progress' && (
-              <div class="space-y-4">
-                <h2 class="text-xl font-bold">Progress & Insights</h2>
+            {/* ======================================================== */}
+            {/* TAB 4: INTERMITTENT FASTING (Popular Cal AI Feature) */}
+            {/* ======================================================== */}
+            {activeTab === 'fasting' && (
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <h2 className="text-xl font-bold tracking-tight">{t.fastingTitle}</h2>
+                  <p className="text-xs text-nutraSec">16:8 Lean Fasting Protocol (Autophagy & Insulin Reset).</p>
+                </div>
 
-                {/* Weight Trend Chart */}
-                <div class="bg-nutraCard rounded-3xl p-5 shadow-sm border border-nutraBorder">
-                  <div class="flex justify-between items-center mb-3">
-                    <span class="font-bold text-sm">Weight Progression</span>
-                    <span class="text-xs font-bold text-nutraGreen">{user.weightKg} kg (-4.5 kg)</span>
+                {/* Fasting Circular Timer Card */}
+                <div className="bg-nutraCard rounded-3xl p-6 text-center shadow-sm border border-nutraBorder/60 space-y-3">
+                  <span className="text-xs font-bold bg-nutraGreen/15 text-nutraGreen px-3 py-1 rounded-full">
+                    {t.fatBurn}
+                  </span>
+
+                  <div className="relative w-44 h-44 mx-auto flex items-center justify-center my-2">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="42" stroke="#EAEAEF" strokeWidth="7" fill="none" />
+                      <circle 
+                        cx="50" cy="50" r="42" 
+                        stroke="#34C759" 
+                        strokeWidth="7" 
+                        strokeDasharray="264" 
+                        strokeDashoffset={264 - (264 * (user.fastingHours / user.fastingTarget))} 
+                        strokeLinecap="round" 
+                        fill="none" 
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-3xl font-black">{user.fastingHours}h 20m</span>
+                      <span className="text-[11px] text-nutraSec font-semibold">of {user.fastingTarget}h goal</span>
+                    </div>
                   </div>
 
-                  {/* SVG Line Graph */}
-                  <div class="h-28 w-full">
-                    <svg class="w-full h-full" viewBox="0 0 300 100">
-                      <line x1="0" y1="80" x2="300" y2="80" stroke="#34C759" stroke-width="1" stroke-dasharray="4" />
+                  <div className="text-xs text-nutraSec">
+                    Eating window opens in <strong className="text-black">1 hr 40 min</strong>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-2">
+                    <button 
+                      onClick={() => alert("Fasting window adjusted!")}
+                      className="bg-white border border-nutraBorder py-2.5 rounded-2xl text-xs font-bold tap-scale shadow-sm"
+                    >
+                      End Fast
+                    </button>
+                    <button 
+                      onClick={() => alert("Fast logged successfully.")}
+                      className="bg-black text-white py-2.5 rounded-2xl text-xs font-bold tap-scale shadow-sm"
+                    >
+                      Extend Fast +1h
+                    </button>
+                  </div>
+                </div>
+
+                {/* Stages of Fasting Explanation */}
+                <div className="bg-nutraCard rounded-3xl p-4 shadow-sm border border-nutraBorder/60 space-y-3">
+                  <h3 className="font-bold text-xs uppercase text-nutraSec">Metabolic Stages</h3>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center space-x-2 text-nutraGreen font-semibold">
+                      <span>✓</span>
+                      <span>0-12 hrs: Blood sugar & insulin stabilization</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-nutraGreen font-semibold">
+                      <span>✓</span>
+                      <span>12-14 hrs: Accelerated fat oxidation mode</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-nutraSec">
+                      <span>○</span>
+                      <span>14-16 hrs: Autophagy & cellular repair active</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ======================================================== */}
+            {/* TAB 5: PROGRESS & WEEKLY INSIGHTS */}
+            {/* ======================================================== */}
+            {activeTab === 'progress' && (
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <h2 className="text-xl font-bold tracking-tight">Progress & Report Card</h2>
+                  <p className="text-xs text-nutraSec">Weekly metrics and nutrition consistency.</p>
+                </div>
+
+                {/* Weight Trend Card */}
+                <div className="bg-nutraCard rounded-3xl p-5 shadow-sm border border-nutraBorder/60 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-xs">Weight Trend</span>
+                    <span className="text-xs font-bold text-nutraGreen">{user.weightKg} kg (-4.3 kg)</span>
+                  </div>
+
+                  {/* SVG Minimalist Line Graph */}
+                  <div className="h-28 w-full">
+                    <svg className="w-full h-full" viewBox="0 0 300 100">
+                      <line x1="0" y1="80" x2="300" y2="80" stroke="#34C759" strokeWidth="1" strokeDasharray="4" />
                       <polyline
                         fill="none"
                         stroke="#0A0A0A"
-                        stroke-width="3"
-                        points="10,20 75,35 150,45 225,60 290,70"
+                        strokeWidth="3.5"
+                        strokeLinecap="round"
+                        points="10,25 65,40 135,48 210,65 290,72"
                       />
-                      <circle cx="10" cy="20" r="4" fill="#0A0A0A" />
-                      <circle cx="75" cy="35" r="4" fill="#0A0A0A" />
-                      <circle cx="150" cy="45" r="4" fill="#0A0A0A" />
-                      <circle cx="225" cy="60" r="4" fill="#0A0A0A" />
-                      <circle cx="290" cy="70" r="5" fill="#34C759" />
+                      <circle cx="10" cy="25" r="4" fill="#0A0A0A" />
+                      <circle cx="65" cy="40" r="4" fill="#0A0A0A" />
+                      <circle cx="135" cy="48" r="4" fill="#0A0A0A" />
+                      <circle cx="210" cy="65" r="4" fill="#0A0A0A" />
+                      <circle cx="290" cy="72" r="5" fill="#34C759" />
                     </svg>
                   </div>
 
-                  <div class="flex justify-between text-[11px] text-nutraSec mt-1">
+                  <div className="flex justify-between text-[11px] text-nutraSec pt-1 border-t border-nutraBorder/60">
                     <span>Start: 74.5 kg</span>
-                    <span class="font-bold text-black">Current: {user.weightKg} kg</span>
+                    <span className="font-bold text-black">Current: {user.weightKg} kg</span>
                     <span>Goal: {user.targetWeightKg} kg</span>
                   </div>
                 </div>
 
-                {/* Macro Split Bar */}
-                <div class="bg-nutraCard rounded-2xl p-4 shadow-sm border border-nutraBorder">
-                  <div class="font-bold text-xs mb-2">Macro Distribution Split</div>
-                  <div class="flex h-3 rounded-full overflow-hidden">
-                    <div class="bg-nutraAmber" style={{ width: `${user.carbsPct}%` }}></div>
-                    <div class="bg-nutraGreen" style={{ width: `${user.proteinPct}%` }}></div>
-                    <div class="bg-nutraRed" style={{ width: `${user.fatPct}%` }}></div>
+                {/* 7-Day Calorie Bars */}
+                <div className="bg-nutraCard rounded-3xl p-5 shadow-sm border border-nutraBorder/60 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-xs">7-Day Calorie Adherence</span>
+                    <span className="text-xs text-nutraSec">Target: {user.dailyCal} kcal</span>
                   </div>
-                  <div class="flex justify-between text-[11px] mt-2 text-nutraSec">
-                    <span>Carbs ({user.carbsPct}%)</span>
-                    <span>Protein ({user.proteinPct}%)</span>
-                    <span>Fats ({user.fatPct}%)</span>
+                  <div className="flex items-end justify-between h-28 pt-2">
+                    {[
+                      { day: 'Mon', cal: 1890, ok: true },
+                      { day: 'Tue', cal: 1940, ok: true },
+                      { day: 'Wed', cal: 2100, ok: false },
+                      { day: 'Thu', cal: 1820, ok: true },
+                      { day: 'Fri', cal: 1910, ok: true },
+                      { day: 'Sat', cal: 1980, ok: true },
+                      { day: 'Sun', cal: consumedCal, ok: true }
+                    ].map(d => {
+                      const heightPct = Math.min(100, (d.cal / 2400) * 100);
+                      return (
+                        <div key={d.day} className="flex flex-col items-center flex-1 space-y-1">
+                          <div className="w-6 bg-gray-200 rounded-t-lg h-20 flex items-end overflow-hidden">
+                            <div 
+                              className={`w-full rounded-t-lg transition-all duration-500 ${d.ok ? 'bg-nutraGreen' : 'bg-nutraAmber'}`}
+                              style={{ height: `${heightPct}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-[10px] text-nutraSec font-semibold">{d.day}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Cal AI Report Card */}
-                <div class="bg-nutraText text-white p-5 rounded-3xl shadow-lg">
-                  <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs font-bold text-nutraGreen uppercase">Weekly Report Card</span>
-                    <span class="text-base font-black text-nutraGreen">Grade A</span>
+                {/* Weekly Health Report Card */}
+                <div className="bg-nutraCard rounded-3xl p-5 shadow-sm border border-nutraBorder/60 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-bold text-sm">Weekly Report Card</h3>
+                    <span className="text-xs font-bold text-nutraGreen">Grade A</span>
                   </div>
-                  <p class="text-xs text-white/80 leading-relaxed mb-3">
-                    Outstanding consistency with pulses and millets. Blood sugar spike control remained 94% optimal across all meals.
+                  <p className="text-xs text-nutraSec leading-relaxed">
+                    Great discipline this week! Your glycemic load was controlled on 6 of 7 days, primarily due to pairing high-fiber millets and probiotic chaas.
                   </p>
-                  <button
-                    onClick={() => {
-                      if (navigator.share) {
-                        navigator.share({ title: 'Nutracal Report Card', text: 'Scored Grade A in Indian Diet & Sugar Control on Nutracal.ai!' });
-                      } else {
-                        alert("Shared Nutracal.ai Weekly Report Card: Grade A!");
-                      }
-                    }}
-                    class="w-full bg-white text-black py-2.5 rounded-xl font-bold text-xs tap-scale"
-                  >
-                    Share Report Card
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 5: SETTINGS & GOALS */}
-            {activeTab === 'settings' && (
-              <div class="space-y-4">
-                <h2 class="text-xl font-bold">Goals & Profile</h2>
-
-                <div class="bg-nutraCard rounded-2xl p-4 space-y-3 shadow-sm border border-nutraBorder">
-                  <div class="font-bold text-sm">Personal Targets</div>
-                  <div class="flex justify-between text-xs">
-                    <span class="text-nutraSec">Daily Calorie Budget</span>
-                    <span class="font-bold">{user.dailyCal} kcal</span>
-                  </div>
-                  <div class="flex justify-between text-xs">
-                    <span class="text-nutraSec">Protein Target</span>
-                    <span class="font-bold text-nutraGreen">{user.proteinG} g</span>
-                  </div>
-                  <div class="flex justify-between text-xs">
-                    <span class="text-nutraSec">Carbohydrates Target</span>
-                    <span class="font-bold text-nutraAmber">{user.carbsG} g</span>
-                  </div>
-                  <div class="flex justify-between text-xs">
-                    <span class="text-nutraSec">Healthy Fats Target</span>
-                    <span class="font-bold text-nutraRed">{user.fatG} g</span>
-                  </div>
-                </div>
-
-                <div class="bg-nutraCard rounded-2xl p-4 space-y-2 shadow-sm border border-nutraBorder text-xs">
-                  <div class="font-bold text-sm">System & Data</div>
-                  <button onClick={() => { setMeals([]); alert("Today's diary cleared."); }} class="w-full text-left text-nutraRed font-bold py-1.5">
-                    Clear Today's Diary
-                  </button>
-                  <div class="text-nutraSec text-[11px] pt-1 border-t border-nutraBorder">
-                    Database standard: ICMR-NIN Food Composition Tables (Hyderabad)
-                  </div>
                 </div>
               </div>
             )}
 
           </main>
 
-          {/* BOTTOM TAB BAR (Cal AI + MyFitnessPal 5 Tabs) */}
-          <nav class="fixed bottom-0 left-0 right-0 mx-auto max-w-md bg-white/95 backdrop-blur border-t border-nutraBorder px-2 py-2 flex justify-around items-center z-40">
-            <button onClick={() => setActiveTab('diary')} class={`flex flex-col items-center tap-scale ${activeTab==='diary'?'text-black':'text-nutraSec'}`}>
-              <span class="text-lg">📖</span>
-              <span class="text-[10px] font-semibold">{t.diary}</span>
+          {/* ============================================================ */}
+          {/* BOTTOM NAVIGATION TAB BAR (Cal AI + MyFitnessPal 5 Tabs) */}
+          {/* ============================================================ */}
+          <nav className="fixed bottom-0 left-0 right-0 mx-auto max-w-md bg-white/95 backdrop-blur-md border-t border-nutraBorder/60 px-2 py-2 flex justify-around items-center z-40">
+            {/* Tab 1: Diary */}
+            <button 
+              onClick={() => setActiveTab('diary')} 
+              className={`flex flex-col items-center tap-scale py-1 flex-1 ${activeTab==='diary'?'text-black font-bold':'text-nutraSec'}`}
+            >
+              <span className="text-xl">📖</span>
+              <span className="text-[10px] tracking-tight">{t.diary}</span>
             </button>
 
-            <button onClick={() => setActiveTab('search')} class={`flex flex-col items-center tap-scale ${activeTab==='search'?'text-black':'text-nutraSec'}`}>
-              <span class="text-lg">🔍</span>
-              <span class="text-[10px] font-semibold">{t.search}</span>
+            {/* Tab 2: Search */}
+            <button 
+              onClick={() => setActiveTab('search')} 
+              className={`flex flex-col items-center tap-scale py-1 flex-1 ${activeTab==='search'?'text-black font-bold':'text-nutraSec'}`}
+            >
+              <span className="text-xl">🔍</span>
+              <span className="text-[10px] tracking-tight">{t.search}</span>
             </button>
 
-            {/* Elevated Center Scan Button */}
-            <div class="-mt-6">
-              <button onClick={() => setActiveTab('scan')} class="w-14 h-14 rounded-full bg-nutraText text-white shadow-xl flex items-center justify-center text-xl tap-scale border-2 border-white">
-                <span class={activeTab === 'scan' ? 'text-nutraGreen' : 'text-white'}>📷</span>
+            {/* Tab 3: Elevated Center Scan Button */}
+            <div className="-mt-7 flex-shrink-0">
+              <button 
+                onClick={() => setActiveTab('scan')} 
+                className="w-14 h-14 rounded-full bg-nutraText text-white shadow-xl flex items-center justify-center text-2xl tap-scale border-4 border-white ring-2 ring-nutraGreen/30"
+              >
+                <span className={activeTab === 'scan' ? 'text-nutraGreen' : 'text-white'}>📷</span>
               </button>
             </div>
 
-            <button onClick={() => setActiveTab('progress')} class={`flex flex-col items-center tap-scale ${activeTab==='progress'?'text-black':'text-nutraSec'}`}>
-              <span class="text-lg">📈</span>
-              <span class="text-[10px] font-semibold">{t.progress}</span>
+            {/* Tab 4: Fasting */}
+            <button 
+              onClick={() => setActiveTab('fasting')} 
+              className={`flex flex-col items-center tap-scale py-1 flex-1 ${activeTab==='fasting'?'text-black font-bold':'text-nutraSec'}`}
+            >
+              <span className="text-xl">⏳</span>
+              <span className="text-[10px] tracking-tight">{t.fasting}</span>
             </button>
 
-            <button onClick={() => setActiveTab('settings')} class={`flex flex-col items-center tap-scale ${activeTab==='settings'?'text-black':'text-nutraSec'}`}>
-              <span class="text-lg">⚙️</span>
-              <span class="text-[10px] font-semibold">{t.settings}</span>
+            {/* Tab 5: Progress */}
+            <button 
+              onClick={() => setActiveTab('progress')} 
+              className={`flex flex-col items-center tap-scale py-1 flex-1 ${activeTab==='progress'?'text-black font-bold':'text-nutraSec'}`}
+            >
+              <span className="text-xl">📈</span>
+              <span className="text-[10px] tracking-tight">{t.progress}</span>
             </button>
           </nav>
 
-          {/* Quick Add Modal */}
-          {showQuickAdd && (
-            <div class="fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
-              <div class="bg-white w-full max-w-md rounded-t-3xl p-5 space-y-3 max-h-[80vh] overflow-y-auto">
-                <div class="flex justify-between items-center">
-                  <h3 class="font-bold text-base">Quick Add to {activeMealType}</h3>
-                  <button onClick={() => setShowQuickAdd(false)} class="text-sm font-bold text-nutraSec">✕</button>
+          {/* ============================================================ */}
+          {/* PROFILE & LOGOUT SLIDE-OVER DRAWER MODAL */}
+          {/* ============================================================ */}
+          {isProfileOpen && (
+            <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm transition-all duration-300">
+              {/* Backdrop tap to close */}
+              <div className="absolute inset-0" onClick={() => setIsProfileOpen(false)}></div>
+
+              {/* Drawer Sheet */}
+              <div className="relative w-full max-w-xs bg-white h-full shadow-2xl p-5 flex flex-col justify-between overflow-y-auto z-10 space-y-4">
+                
+                <div className="space-y-4">
+                  {/* Top Bar with Close */}
+                  <div className="flex justify-between items-center border-b border-nutraBorder/60 pb-3">
+                    <span className="font-bold text-base">Account & Goals</span>
+                    <button 
+                      onClick={() => setIsProfileOpen(false)}
+                      className="w-8 h-8 rounded-full bg-nutraCard flex items-center justify-center text-sm font-bold text-nutraSec tap-scale"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {/* Profile Header Card */}
+                  <div className="bg-nutraCard p-4 rounded-3xl text-center space-y-2 border border-nutraBorder/60">
+                    <div className="relative w-16 h-16 mx-auto">
+                      <img 
+                        src={user.avatar} 
+                        alt="Profile" 
+                        className="w-full h-full rounded-full object-cover ring-2 ring-nutraGreen" 
+                      />
+                      <button 
+                        onClick={() => alert("Profile photo upload triggered")} 
+                        className="absolute bottom-0 right-0 w-5 h-5 bg-black text-white text-[10px] rounded-full flex items-center justify-center shadow"
+                      >
+                        📷
+                      </button>
+                    </div>
+
+                    <div>
+                      <h3 className="font-bold text-sm text-nutraText">{user.name}</h3>
+                      <p className="text-[11px] text-nutraSec">{user.email}</p>
+                    </div>
+
+                    <div className="inline-block bg-nutraGreen/15 text-nutraGreen text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                      Nutracal Pro Member
+                    </div>
+                  </div>
+
+                  {/* Daily Calorie Goal Setting Card */}
+                  <div className="bg-nutraCard p-4 rounded-3xl space-y-2 border border-nutraBorder/60">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-nutraSec uppercase tracking-wider">Daily Target</span>
+                      <button 
+                        onClick={() => setIsEditingGoal(!isEditingGoal)} 
+                        className="text-xs font-bold text-nutraGreen"
+                      >
+                        {isEditingGoal ? "Done" : "Edit"}
+                      </button>
+                    </div>
+
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-2xl font-black">{user.dailyCal}</span>
+                      <span className="text-xs text-nutraSec">kcal / day</span>
+                    </div>
+
+                    {isEditingGoal && (
+                      <div className="pt-2 space-y-1">
+                        <input 
+                          type="range" 
+                          min="1200" 
+                          max="3200" 
+                          step="50"
+                          value={user.dailyCal}
+                          onChange={(e) => setUser({ ...user, dailyCal: parseInt(e.target.value) })}
+                          className="w-full accent-black cursor-pointer"
+                        />
+                        <div className="flex justify-between text-[10px] text-nutraSec">
+                          <span>1200 kcal</span>
+                          <span>3200 kcal</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Body Metrics */}
+                  <div className="bg-nutraCard p-4 rounded-3xl space-y-2 border border-nutraBorder/60 text-xs">
+                    <span className="font-bold text-nutraSec uppercase tracking-wider text-[10px]">Body Composition</span>
+                    <div className="flex justify-between py-1 border-b border-nutraBorder/40">
+                      <span className="text-nutraSec">Current Weight</span>
+                      <span className="font-bold text-black">{user.weightKg} kg</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-nutraBorder/40">
+                      <span className="text-nutraSec">Target Goal Weight</span>
+                      <span className="font-bold text-nutraGreen">{user.targetWeightKg} kg</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-nutraBorder/40">
+                      <span className="text-nutraSec">Height</span>
+                      <span className="font-bold text-black">{user.heightCm} cm</span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-nutraSec">Calculated BMI</span>
+                      <span className="font-bold text-nutraGreen">22.6 (Healthy)</span>
+                    </div>
+                  </div>
+
+                  {/* Sync & Health Connect */}
+                  <div className="bg-nutraCard p-3.5 rounded-2xl flex items-center justify-between border border-nutraBorder/60 text-xs">
+                    <div className="flex items-center space-x-2">
+                      <span>❤️</span>
+                      <span className="font-medium">Google Fit / Apple Health</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-nutraGreen bg-nutraGreen/15 px-2 py-0.5 rounded-full">Synced</span>
+                  </div>
                 </div>
 
-                <div class="space-y-2">
-                  {indianFoodDB.slice(0, 5).map(f => (
-                    <div
-                      key={f.id}
-                      onClick={() => {
-                        setMeals([...meals, { id: Date.now(), type: activeMealType, title: f.name, cal: f.cal, p: f.p, c: f.c, f: f.f, spike: f.spike, fix: f.fix }]);
-                        setShowQuickAdd(false);
-                      }}
-                      class="bg-nutraCard p-3 rounded-xl flex justify-between items-center cursor-pointer tap-scale"
-                    >
-                      <div>
-                        <div class="font-bold text-xs">{f.name}</div>
-                        <div class="text-[10px] text-nutraSec">{f.desc}</div>
-                      </div>
-                      <span class="font-bold text-xs">{f.cal} kcal</span>
-                    </div>
-                  ))}
+                {/* LOGOUT & RESET BUTTONS */}
+                <div className="space-y-2 pt-2 border-t border-nutraBorder/60">
+                  <button 
+                    onClick={() => {
+                      if (confirm("Reset today's meals and water?")) {
+                        setMeals([]);
+                        setWaterGlasses(0);
+                        setIsProfileOpen(false);
+                      }
+                    }}
+                    className="w-full py-2.5 rounded-2xl border border-nutraBorder text-xs font-bold text-nutraSec hover:text-black tap-scale"
+                  >
+                    Reset Today's Log
+                  </button>
+
+                  <button 
+                    onClick={() => {
+                      if (confirm("Are you sure you want to log out of Nutracal.ai?")) {
+                        alert("Logged out successfully.");
+                        setIsProfileOpen(false);
+                      }
+                    }}
+                    className="w-full py-3 rounded-2xl bg-nutraRed/10 text-nutraRed border border-nutraRed/20 text-xs font-bold tap-scale flex items-center justify-center space-x-1"
+                  >
+                    <span>🚪</span>
+                    <span>Log Out of Nutracal.ai</span>
+                  </button>
                 </div>
+
               </div>
             </div>
           )}
