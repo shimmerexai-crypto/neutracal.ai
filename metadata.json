@@ -1,0 +1,6 @@
+{
+  "name": "Nutracal.ai",
+  "description": "AI food scanner for Indian users with ICMR-NIN nutrition data, sugar spike meter, desi health fixes, and multilingual support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
